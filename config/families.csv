@@ -1,0 +1,10 @@
+family_id,label,patterns
+defence_policy,White papers and defence policies,"defen[cs]e policy|white paper|politique de défense|livre blanc"
+parliament,Parliamentary debates and committee documents,"ourcommons|parl.ca|committee|debates|hansard|comité|débats"
+development,CIDA and Global Affairs Canada documents,"global affairs|affaires mondiales|cida|acdi|international development|développement international"
+armed_forces,Canadian Armed Forces operations and archives,"armed forces|forces armées|operation |opération |national defence|défense nationale"
+rcmp,RCMP documents and police missions,"rcmp|grc|royal canadian mounted|gendarmerie royale|police mission"
+statements,Ministerial speeches and official statements,"speech|statement|news release|discours|déclaration|communiqué"
+regional_strategy,Americas and Caribbean strategies,"americas|caribbean|amériques|caraïbes|strategy|stratégie"
+sanctions,Sanctions regulations and related measures,"sanction|regulation|règlement|mesures économiques|laws-lois.justice"
+public_finance,Budgets estimates and public accounts,"budget|estimates|public accounts|budget des dépenses|comptes publics"

@@ -1,0 +1,26 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "Canada–Haiti Official Documents Corpus"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Corpus
+      - href: methodology.qmd
+        text: Methodology
+      - href: limitations.qmd
+        text: Limitations
+  page-footer: "Open academic corpus — always consult the linked official record."
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    link-external-newwindow: true
+
+execute:
+  echo: false
+  warning: false
+  freeze: false

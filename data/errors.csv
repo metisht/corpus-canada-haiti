@@ -1,0 +1,33 @@
+"source_id","url","stage","error_type","message","occurred_at","http_status"
+"gac_news","https://api.io.canada.ca/io-server/gc/news/en/v2?search=Haiti&sort=publishedDate&orderBy=desc&pick=100","discovery","httr2_failure","Failed to perform HTTP request.
+Caused by error in `curl::curl_fetch_memory()`:
+! SSL connect error [api.io.canada.ca]:
+schannel: AcquireCredentialsHandle failed: SEC_E_NO_CREDENTIALS (0x8009030E) - No credentials are available in the security package","2026-09-22 07:23:25 UTC",
+"parliament","https://www.ourcommons.ca/PublicationSearch/en/?Text=Haiti","discovery","httr2_failure","Failed to perform HTTP request.
+Caused by error in `curl::curl_fetch_memory()`:
+! SSL connect error [www.ourcommons.ca]:
+schannel: AcquireCredentialsHandle failed: SEC_E_NO_CREDENTIALS (0x8009030E) - No credentials are available in the security package","2026-09-22 07:23:26 UTC",
+"forces_archive","https://www.canada.ca/en/department-national-defence/services/military-history/history-heritage/past-operations/caribbean.html","discovery","httr2_failure","Failed to perform HTTP request.
+Caused by error in `curl::curl_fetch_memory()`:
+! SSL connect error [www.canada.ca]:
+schannel: AcquireCredentialsHandle failed: SEC_E_NO_CREDENTIALS (0x8009030E) - No credentials are available in the security package","2026-09-22 07:23:26 UTC",
+"rcmp_news","https://www.rcmp-grc.gc.ca/en/news?search_api_fulltext=Haiti","discovery","httr2_failure","Failed to perform HTTP request.
+Caused by error in `curl::curl_fetch_memory()`:
+! SSL connect error [www.rcmp-grc.gc.ca]:
+schannel: AcquireCredentialsHandle failed: SEC_E_NO_CREDENTIALS (0x8009030E) - No credentials are available in the security package","2026-09-22 07:23:26 UTC",
+"sanctions","https://laws-lois.justice.gc.ca/eng/regulations/SOR-2022-226/index.html","retrieval_or_extraction","httr2_failure","Failed to perform HTTP request.
+Caused by error in `curl::curl_fetch_memory()`:
+! SSL connect error [laws-lois.justice.gc.ca]:
+schannel: AcquireCredentialsHandle failed: SEC_E_NO_CREDENTIALS (0x8009030E) - No credentials are available in the security package","2026-09-22 07:23:26 UTC",
+"sanctions","https://laws-lois.justice.gc.ca/eng/regulations/SOR-2022-237/index.html","retrieval_or_extraction","httr2_failure","Failed to perform HTTP request.
+Caused by error in `curl::curl_fetch_memory()`:
+! SSL connect error [laws-lois.justice.gc.ca]:
+schannel: AcquireCredentialsHandle failed: SEC_E_NO_CREDENTIALS (0x8009030E) - No credentials are available in the security package","2026-09-22 07:23:26 UTC",
+"open_data","https://open.canada.ca/data/api/action/package_search?q=Haiti&rows=100","discovery","httr2_failure","Failed to perform HTTP request.
+Caused by error in `curl::curl_fetch_memory()`:
+! SSL connect error [open.canada.ca]:
+schannel: AcquireCredentialsHandle failed: SEC_E_NO_CREDENTIALS (0x8009030E) - No credentials are available in the security package","2026-09-22 07:23:26 UTC",
+"publications","https://publications.gc.ca/site/eng/search/search.html?st=1&e=0&Ntt=Haiti","discovery","httr2_failure","Failed to perform HTTP request.
+Caused by error in `curl::curl_fetch_memory()`:
+! SSL connect error [publications.gc.ca]:
+schannel: AcquireCredentialsHandle failed: SEC_E_NO_CREDENTIALS (0x8009030E) - No credentials are available in the security package","2026-09-22 07:23:26 UTC",

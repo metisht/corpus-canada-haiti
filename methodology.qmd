@@ -1,0 +1,25 @@
+---
+title: "Methodology"
+---
+
+## Scope and inclusion
+
+The corpus covers official Canadian documents that substantively concern Haiti/Haïti from 1991 through 2026. Discovery uses only configured official listings, archives, search systems, and APIs. Each discovered record is opened and its extracted HTML or PDF text evaluated. A case-label match makes it a candidate; analytical concepts are coded afterward and are never required for inclusion.
+
+## Reproducible workflow
+
+1. `config/case.yml` defines the case, labels, dates, and polite-request limits.
+2. `config/sources.csv`, `families.csv`, and `terms.csv` define discovery, multi-label families, and editable concepts.
+3. `Rscript run.R` performs the capped live validation, caches downloads locally, and records failures without stopping other sources.
+4. New records enter `data/review.csv` as `pending`. Researchers change `decision` to `retain` or `exclude` and may add notes; later runs preserve these rows.
+5. The crawler writes all candidates, retained records, vocabulary, and diagnostics separately. Canonical URLs and content hashes remove duplicates while preserving multiple family labels.
+
+Dates that cannot be established remain `uncertain` for manual review. The direct official URL and discovery page are retained for provenance.
+
+## Data files
+
+- `data/candidates.csv`: all content-validated candidates.
+- `data/review.csv`: durable human decisions and annotations.
+- `data/corpus.csv`: records marked `retain` or `include`.
+- `data/concepts.csv`: publishable analytical vocabulary.
+- `data/retrieval_diagnostics.csv`: per-source outcomes and failures.
