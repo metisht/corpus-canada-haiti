@@ -1,16 +1,16 @@
-"document_id","decision","notes","reviewer","reviewed_at"
-"doc_d87365c1a4966d1a","pending",,,
-"doc_96c6662db3bfef00","pending",,,
-"doc_cb1da35086f25a24","pending",,,
-"doc_184276a687523ced","pending",,,
-"doc_c3417e113a9af055","pending",,,
-"doc_c117a84e6fce1ca1","pending",,,
-"doc_a623c818abc04a16","pending",,,
-"doc_5f336d8282b2a48a","pending",,,
-"doc_0c351e91be4ca3cb","pending",,,
-"doc_95a290648ed9766b","pending",,,
-"doc_4134626e2cee3cbc","pending",,,
-"doc_7fdba604229ba9c1","pending",,,
-"doc_d3f94420042b8075","pending",,,
-"doc_8e85417be9b21f2c","pending",,,
-"doc_4cc4fdd8ad66ad01","pending",,,
+"document_id","version_id","decision","notes","reviewer","reviewed_at"
+"doc_1d1eaafa5cce2a2d","ver_0200815d4c3ef1a2","retain",,"Patricia Camilien","2026-09-22T08:36:21Z"
+"doc_6be9585faccc4f7a","ver_dbd0d3b99f400115","retain",,"Patricia Camilien","2026-09-22T08:36:21Z"
+"doc_20635e8af9638f0c","ver_d4761ddd0d29dc86","retain",,"Patricia Camilien","2026-09-22T08:36:21Z"
+"doc_f52e050092a968d9","ver_a892e231a776482c","retain",,"Patricia Camilien","2026-09-22T08:36:21Z"
+"doc_472b62aa5d6660ea","ver_bc9f5c714fafcfb4","retain",,"Patricia Camilien","2026-09-22T08:36:21Z"
+"doc_d9409a3e9b107e60","ver_24df947de27cefa7","retain",,"Patricia Camilien","2026-09-22T08:36:21Z"
+"doc_d9409a3e9b107e60","ver_d2d2a7f0436b576e","retain",,"Patricia Camilien","2026-09-22T08:36:21Z"
+"doc_37f1777035ca16f7","ver_bb707e49fb7aecee","retain",,"Patricia Camilien","2026-09-22T08:36:21Z"
+"doc_97bcc507a52184aa","ver_f47294839545fb16","retain",,"Patricia Camilien","2026-09-22T08:36:21Z"
+"doc_df22bbd080fc675e","ver_a4c116cb83e559b5","retain",,"Patricia Camilien","2026-09-22T08:36:21Z"
+"doc_50bc0e9662ed4a7f","ver_35043887d26de99b","retain",,"Patricia Camilien","2026-09-22T08:36:21Z"
+"doc_37f1777035ca16f7","ver_b2e23745acded51a","retain",,"Patricia Camilien","2026-09-22T08:36:21Z"
+"doc_446ed6e0029a3c15","ver_c3e4bbe96a9fce4f","retain",,"Patricia Camilien","2026-09-22T08:36:21Z"
+"doc_5e34174ad5474dde","ver_5fbc17e9fbc44c62","retain",,"Patricia Camilien","2026-09-22T08:36:21Z"
+"doc_e67d437639b0c02e","ver_a7a021c3159189df","retain",,"Patricia Camilien","2026-09-22T08:36:21Z"
