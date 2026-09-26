@@ -1,9 +1,10 @@
 project:
   type: website
+  # Generated output is intentionally ignored; local renders validate both languages.
   output-dir: _site
 
 website:
-  title: "Canada–Haiti Official Documents Corpus"
+  title: "Canada–Haiti: Official Discourse and Policy Corpus"
   navbar:
     left:
       - href: index.qmd
@@ -17,10 +18,13 @@ website:
 format:
   html:
     theme: cosmo
+    css: styles.css
+    include-after-body: _includes/language-nav.html
     toc: true
     link-external-newwindow: true
 
 execute:
   echo: false
   warning: false
+  # Always recompute data-derived corpus counts; do not reuse frozen results.
   freeze: false

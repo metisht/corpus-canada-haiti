@@ -1,7 +1,20 @@
+# Shared utilities for identifiers, UTF-8 normalization, CSV I/O, and diagnostics.
+# Loaded by crawler, reconciliation, migration, and tests. File writes occur only
+# through write_csv(); stable IDs and lossless UTF-8 are core invariants.
+
 `%||%` <- function(x, y) if (is.null(x) || !length(x) || all(is.na(x))) y else x
 
 now_utc <- function() format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
-clean_space <- function(x) trimws(gsub("\\s+", " ", iconv(x %||% "", from = "", to = "UTF-8", sub = "")))
+normalize_utf8 <- function(x) {
+  x <- enc2utf8(x %||% "")
+  iconv(x, from = "UTF-8", to = "UTF-8", sub = "")
+}
+
+clean_space <- function(x) trimws(gsub("\\s+", " ", normalize_utf8(x)))
+
+contains_mojibake <- function(x) {
+  any(grepl("Ã|â€™|D├⌐|ΓÇö", x %||% ""), na.rm = TRUE)
+}
 
 canonicalize_url <- function(x) {
   x <- trimws(x)
@@ -28,8 +41,11 @@ official_work_key <- function(url, alternate_urls = character()) {
     if (length(id) && nzchar(id)) return(paste0("justice:consolidated:", toupper(id)))
   }
   # International Canada uses an explicit language query on the same page path.
-  if (any(grepl("international.gc.ca$", host))) {
-    z <- u[grepl("international.gc.ca$", host)][1]
+  if (any(grepl("international\\.(?:gc|canada)\\.ca$", host))) {
+    z <- u[grepl("international\\.(?:gc|canada)\\.ca$", host)][1]
+    review_id <- regmatches(z, regexpr("(?i)(?:sor|dors)-[0-9]{4}-[0-9]+", z, perl = TRUE))
+    if (length(review_id) && nzchar(review_id))
+      return(paste0("international:regulatory-review:", sub("^(sor|dors)-", "", tolower(review_id))))
     return(paste0("international:", sub("([?&])lang=(eng|fra)(&|$)", "", z, ignore.case = TRUE)))
   }
   # For Canada.ca, only an official alternate-language link authorizes pairing.
@@ -42,6 +58,51 @@ official_work_key <- function(url, alternate_urls = character()) {
 
 stable_document_id <- function(url, alternate_urls = character()) paste0("doc_", substr(digest::digest(official_work_key(url, alternate_urls), "sha256"), 1, 16))
 stable_version_id <- function(url, language) paste0("ver_", substr(digest::digest(paste(canonicalize_url(url), language, sep = "|"), "sha256"), 1, 16))
+
+parliament_document_key <- function(url, document_type = "") {
+  normalized <- canonicalize_url(url)
+  modern <- regexec("/(?:en|fr)/(\\d+)-(\\d+)/(?:house|chambre)/(?:sitting|seance)-(\\d+)/(hansard|debats|journals|journaux)", normalized, ignore.case = TRUE, perl = TRUE)
+  bits <- regmatches(normalized, modern)[[1]]
+  if (length(bits) == 5L) {
+    kind <- if (tolower(bits[5]) %in% c("hansard", "debats")) "house_debate" else "house_journal"
+    return(paste("parliament", bits[2], bits[3], kind, as.integer(bits[4]), sep = ":"))
+  }
+  pdf <- regexec("/Content/House/(\\d{2})(\\d)/(Debates|Journals)/(\\d+)/", normalized, ignore.case = TRUE, perl = TRUE)
+  bits <- regmatches(normalized, pdf)[[1]]
+  if (length(bits) == 5L) {
+    kind <- if (tolower(bits[4]) == "debates") "house_debate" else "house_journal"
+    return(paste("parliament", bits[2], bits[3], kind, as.integer(bits[5]), sep = ":"))
+  }
+  historical <- regexec("/(?:files/get|view)/([^/]+)/(\\d+)$", normalized, ignore.case = TRUE, perl = TRUE)
+  bits <- regmatches(normalized, historical)[[1]]
+  if (length(bits) == 3L) {
+    key <- historical_volume_pair_key(bits[2])
+    return(paste("historical_parliament", key, as.integer(bits[3]), sep = ":"))
+  }
+  official_work_key(normalized)
+}
+
+stable_parliament_document_id <- function(url, document_type = "") {
+  paste0("doc_", substr(digest::digest(parliament_document_key(url, document_type), "sha256"), 1, 16))
+}
+
+historical_publication_key <- function(collection, publication_type, publication_date,
+                                       sitting_number = "") {
+  paste("historical_parliament", collection, publication_type,
+        publication_date, sitting_number, sep = ":")
+}
+
+stable_historical_document_id <- function(collection, publication_type,
+                                          publication_date, sitting_number = "") {
+  key <- historical_publication_key(collection, publication_type,
+                                    publication_date, sitting_number)
+  paste0("doc_", substr(digest::digest(key, "sha256"), 1, 16))
+}
+
+stable_historical_version_id <- function(document_id, language = "bilingual") {
+  paste0("ver_", substr(digest::digest(paste(document_id, language, sep = "|"),
+                                        "sha256"), 1, 16))
+}
 
 safe_read_csv <- function(path) {
   if (!file.exists(path) || file.info(path)$size == 0) return(data.frame())
@@ -60,7 +121,7 @@ bind_rows_base <- function(xs) {
 
 write_csv <- function(x, path) write.csv(x, path, row.names = FALSE, na = "", fileEncoding = "UTF-8")
 
-record_diagnostic <- function(source_id, family, url, stage, status, message = "", http_status = NA_integer_) {
-  data.frame(source_id, family, url, stage, status, message = substr(message, 1, 1000),
+record_diagnostic <- function(source_id, family, url, stage, status, message = "", http_status = NA_integer_, run_id = "") {
+  data.frame(run_id, source_id, family, url, stage, status, message = substr(message, 1, 1000),
              http_status, occurred_at = now_utc(), stringsAsFactors = FALSE)
 }

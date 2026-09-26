@@ -6,16 +6,24 @@ title: "Methodology"
 
 The corpus covers official Canadian documents that substantively concern Haiti/Haïti from 1991 through 2026. Discovery uses only configured official listings, archives, search systems, and APIs. Each discovered record is opened and its extracted HTML or PDF text evaluated. A case-label match makes it a candidate; analytical concepts are coded afterward and are never required for inclusion.
 
+This is not an exhaustive archive of every Canadian document that mentions Haiti. Documents are included when their substantive content concerns Haiti, Canadian policy toward Haiti, or Canada’s engagement with the country. Analytical concepts are used to code and examine the corpus; they are not mandatory inclusion criteria.
+
 ## Reproducible workflow
 
 1. `config/case.yml` defines the case, labels, dates, and polite-request limits.
 2. `config/sources.csv`, `families.csv`, and `terms.csv` define discovery, multi-label families, and editable concepts.
 3. `Rscript run.R` performs the capped live validation, caches downloads locally, and records failures without stopping other sources.
-4. New records enter `data/review.csv` as `pending`. Researchers change `decision` to `retain` or `exclude` and may add notes; later runs preserve these rows.
-5. Each official language version has its own `version_id`, language, title, URL, and extracted text. Explicit official alternate-language links and equivalent Gazette identifiers connect versions under one stable `document_id`; title similarity is never used. Consolidated Justice Laws remain distinct from original Gazette publications.
-6. The crawler writes all candidates, retained records, vocabulary, and diagnostics separately. Canonical URLs remove duplicate versions while preserving multiple family labels.
+4. New logical documents enter `data/review.csv` as `pending`. Researchers change `decision` to `retain` or `reject` and may add notes; later runs preserve these rows. Rejected documents leave the active queue only after their provenance, affected versions, reviewer, timestamp, and rationale are preserved in diagnostics and validation history.
+5. Each official English or French text retains its language, title, URL, and extracted content. Explicit official alternate-language links and equivalent Gazette identifiers connect bilingual texts as one document; title similarity is never used. Consolidated Justice Laws remain distinct from original Gazette publications.
+6. The crawler writes all candidates, retained records, vocabulary, and diagnostics separately. Canonical URLs remove duplicate records while preserving multiple family labels.
 
 Publication dates, page modification dates, and operation/event dates are stored separately. The analytical `year` uses an event start for operation records, otherwise a publication date, and only falls back to a page-modification year when the publication date is unavailable; `date_source` records that choice. Dates that cannot be established remain `uncertain` for manual review. The direct official URL and per-record discovery page or endpoint are retained for provenance.
+
+House debates are discovered through official session indexes and localized viewer links. Stable identity is derived from parliament, session, publication type, and sitting or report number. The viewer is `source_page`; its direct localized PDF is `document_url`. The authoritative heading supplies the date, shared by both official languages. Pre-1994 Canadiana records use official volume and sequence keys for bilingual grouping. Historical running headers supply titles and dates; index pages receive explicit index titles.
+
+Defence inclusion uses Canadian operation dates, never page-modification dates. Canadian operation names and associated international missions are stored separately. Historical diplomacy, development, sanctions, and police catalogue records are discovery routes only; the downloaded official document must pass date, substantive-Haiti, and required-family validation. The validation cap applies independently to each source, and each run has separate diagnostics. Changing counts are derived from the data during rendering.
+
+Sanctions discovery preserves three documentary functions. Global Affairs Canada country-policy pages, announcements, permit material, and regulatory reviews are GAC policy records. Original regulations, amendments, and orders published in the Canada Gazette are Gazette records. Consolidated regulations on Justice Laws are separate legal consolidations. Official links connect related records, but the layers are not automatically deduplicated. Current GAC Haiti-sanctions discovery is validated separately for 2022–2026; the historical 1991–1998 sanctions connector presently validates no candidate documents.
 
 ## Data files
 
@@ -24,3 +32,51 @@ Publication dates, page modification dates, and operation/event dates are stored
 - `data/corpus.csv`: records marked `retain` or `include`.
 - `data/concepts.csv`: publishable analytical vocabulary.
 - `data/retrieval_diagnostics.csv`: per-source outcomes and failures.
+
+## Development environment
+
+The crawler, review workflow, and Quarto website are developed in R using the Positron IDE. OpenAI Codex is used as an assisted-development tool for programming, debugging, testing, and documentation. Corpus inclusion and exclusion decisions remain human review decisions. Codex does not autonomously admit documents to the reviewed corpus.
+
+## Documentary unit and pre-review classification
+
+The documentary unit is the official publication or sitting, not a digitized
+page. Relevant pages in one historical publication share one stable
+`document_id`; `component_urls` and page markers preserve every official URL and
+the provenance of combined text. No PDF URL is inferred. If no official file
+covers the whole publication, one official page is the reproducible primary URL
+and all other relevant pages remain explicit components. A publication that
+contains both languages remains one bilingual version; separate versions exist
+only when the official publisher provides them separately.
+
+Substantive content develops Canadian policy or action, an operation or mission,
+assistance, sanctions or diplomacy, a question and answer, testimony, a
+recommendation, or a meaningful factual assessment of Haiti. Indexes, finding
+aids, contents and navigation pages, future-discussion notices, formal adoption
+of an already retained report, editorial corrections, agenda mentions, and
+incidental comparisons do not enter active review. They remain in diagnostics
+as `non_document` or `excluded`, with their URL and rule, not as failures.
+
+A human `reject` does not assert that a mention lacks historical interest. It
+means the publication does not cross this corpus's inclusion threshold. The
+decision is made at `document_id` level and propagates only to true official
+language versions.
+
+`review.csv` is authoritative for human decisions. One decision is recorded per
+logical document and propagated to every active official-language version.
+`corpus.csv` contains only versions belonging to retained documents, with
+`review_status = retain` on each version. Dashboard document totals count
+distinct `document_id` values.
+
+Publication dates and page-modification dates are distinct fields. An explicit
+official publication or release date is preferred and shared across authentic
+language counterparts. A modification date remains provenance metadata and is
+not promoted to a publication date when an evergreen page provides no such
+date.
+
+```{r}
+#| echo: false
+review_data <- utils::read.csv("data/review.csv", stringsAsFactors = FALSE)
+corpus_data <- utils::read.csv("data/corpus.csv", stringsAsFactors = FALSE)
+cat(sprintf("The current reviewed corpus contains %d logical documents.",
+            length(unique(review_data$document_id))))
+```

@@ -1,3 +1,7 @@
+# Fast offline repository integrity check.
+# Reads configuration, candidates, and review data; writes nothing. It verifies
+# schema, identity uniqueness, official URLs, extraction, and review coverage.
+
 required <- c("config/case.yml", "config/sources.csv", "data/candidates.csv", "data/review.csv", "data/corpus.csv", "data/concepts.csv", "data/retrieval_diagnostics.csv")
 stopifnot(all(file.exists(required)))
 cfg <- yaml::read_yaml("config/case.yml")

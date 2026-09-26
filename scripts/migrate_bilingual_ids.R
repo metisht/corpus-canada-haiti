@@ -1,5 +1,6 @@
-# One-time local migration from the original one-row/one-document schema.
-# It reads only existing CSVs and cached responses; it performs no HTTP requests.
+# One-time migration from the original one-row/one-document bilingual schema.
+# Reads candidates, review decisions, and cached responses; rewrites candidates,
+# review, and corpus. It performs no HTTP requests and preserves reviewed decisions.
 for (f in c("R/utils.R", "R/extract.R")) source(f, encoding = "UTF-8")
 
 candidates <- safe_read_csv("data/candidates.csv")

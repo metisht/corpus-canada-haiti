@@ -1,0 +1,32 @@
+---
+title: "Limites et sources manquantes"
+pagetitle: "Limites et sources manquantes – Canada–Haïti : corpus des discours et politiques officiels"
+title-prefix: ""
+lang: fr
+---
+
+Les interfaces de recherche officielles changent, utilisent JavaScript, limitent les requêtes automatisées ou donnent accès à des index historiques incomplets. Les numérisations anciennes peuvent être dépourvues de texte lisible par machine; l’inférence des dates et la détection de la langue dans les documents bilingues sont volontairement prudentes. Les résultats de recherche servent au repérage et ne constituent jamais des documents du corpus. La classification par famille combine les valeurs par défaut des sources avec des règles modifiables et exige donc un examen scientifique.
+
+La première validation signale les lacunes dans `data/retrieval_diagnostics.csv`. Le matériel historique de l’ACDI, les anciennes numérisations parlementaires, les archives des missions de la GRC, les livres blancs et les budgets peuvent notamment nécessiter d’autres interfaces de catalogue ou des listes officielles de départ préparées manuellement. Un échec de récupération indique une lacune dans la couverture, et non l’absence de documents officiels pertinents.
+
+Le nombre de résultats d’un catalogue historique ne mesure pas la couverture. Les publications générales, les numérisations inaccessibles et les documents dont le texte extrait ne porte pas substantiellement sur Haïti sont exclus et consignés. La ROC peut empêcher la validation malgré des métadonnées pertinentes. Une date de modification de page n’établit pas la période d’une opération. Le regroupement bilingue dépend de liens ou d’identifiants officiels; les contreparties manquantes restent des diagnostics explicites. Aucune famille n’est décrite comme couverte avant la réussite des validations ciblées et bornées.
+
+Le constat exact sur les sanctions historiques est limité : le connecteur de 1991–1998 n’a validé aucun document candidat historique. Cela ne signifie pas qu’Affaires mondiales Canada ne possède aucun document sur les sanctions concernant Haïti; un connecteur distinct couvre les pages actuelles de politique et d’annonce d’AMC. Des numéros historiques de la Gazette, des décrets archivés et des documents d’affaires étrangères peuvent demeurer introuvables ou illisibles en raison d’index incomplets et de la ROC.
+
+Cet outil appuie le jugement scientifique sans le remplacer. Consultez le document officiel lié avant de le citer.
+
+La classification automatique avant révision peut produire des faux négatifs,
+notamment lorsque la ROC est médiocre ou qu’un passage substantiel bref ressemble
+à une mention procédurale. Les archives historiques numérisées page par page
+peuvent répartir les en-têtes, dates et passages pertinents sur plusieurs images.
+Certaines publications réellement bilingues ne peuvent pas être séparées
+proprement et demeurent donc un seul document bilingue. Les classifications,
+regroupements de pages, dates et relations bilingues ambigus exigent toujours
+une révision humaine.
+Une liste, un index, une référence procédurale, une comparaison ou une mention
+isolée exclue peut néanmoins présenter un intérêt historique hors du périmètre
+d’inclusion substantielle du corpus. Son motif d’exclusion demeure vérifiable
+même après son retrait de la file active de révision.
+Le total documentaire du tableau de bord utilise les identifiants logiques
+distincts et dépend du corpus retenu réconcilié; des artefacts de rendu périmés
+peuvent autrement afficher un ancien total jusqu’à la régénération du site.

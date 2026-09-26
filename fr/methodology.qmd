@@ -1,0 +1,88 @@
+---
+title: "Méthodologie"
+pagetitle: "Méthodologie – Canada–Haïti : corpus des discours et politiques officiels"
+title-prefix: ""
+lang: fr
+---
+
+## Portée et critères d’inclusion
+
+Le corpus couvre les documents officiels canadiens qui portent substantiellement sur Haïti de 1991 à 2026. Le repérage s’effectue uniquement dans les listes, archives, systèmes de recherche et interfaces de programmation officiels configurés. Chaque document repéré est ouvert, puis son texte HTML ou PDF extrait est évalué. La présence d’un terme désignant le cas étudié en fait un document candidat; les concepts analytiques sont codés par la suite et ne sont jamais exigés pour l’inclusion.
+
+Il ne s’agit pas d’une archive exhaustive de tous les documents canadiens qui mentionnent Haïti. Les documents sont inclus lorsque leur contenu porte substantiellement sur Haïti, sur la politique canadienne envers Haïti ou sur l’engagement du Canada dans le pays. Les concepts analytiques servent au codage et à l’analyse du corpus; ils ne constituent pas des critères d’inclusion obligatoires.
+
+## Démarche reproductible
+
+1. `config/case.yml` définit le cas, ses appellations, les dates et les limites de requêtes respectueuses.
+2. `config/sources.csv`, `families.csv` et `terms.csv` définissent le repérage, les familles à étiquettes multiples et les concepts modifiables.
+3. `Rscript run.R` effectue la validation en ligne limitée, met les téléchargements en cache localement et consigne les échecs sans interrompre les autres sources.
+4. Les nouveaux documents logiques entrent dans `data/review.csv` avec l’état `pending`. Les chercheurs remplacent la valeur de `decision` par `retain` ou `reject` et peuvent ajouter des notes; les exécutions ultérieures conservent ces lignes. Les documents rejetés quittent la file active seulement après la conservation de leur provenance, de leurs versions touchées, du réviseur, de l’horodatage et du motif dans les diagnostics et l’historique de validation.
+5. Chaque texte officiel français ou anglais conserve sa langue, son titre, son URL et son contenu extrait. Les liens officiels vers l’autre langue et les identifiants équivalents de la Gazette relient les textes bilingues comme un seul document; la similarité des titres n’est jamais utilisée. Les lois codifiées du ministère de la Justice demeurent distinctes de leur publication initiale dans la Gazette.
+6. Le collecteur écrit séparément les documents candidats, les documents retenus, le vocabulaire et les diagnostics. Les URL canoniques éliminent les doublons tout en préservant plusieurs étiquettes de famille.
+
+Les dates de publication, les dates de modification des pages et les dates d’opération ou d’événement sont conservées séparément. L’`year` analytique utilise le début d’un événement pour les fiches d’opération, sinon la date de publication; elle n’utilise l’année de modification d’une page que lorsque la date de publication est indisponible, et `date_source` consigne ce choix. Les dates qui ne peuvent être établies demeurent `uncertain` aux fins d’examen manuel. L’URL officielle directe et la page ou l’interface de repérage propre à chaque document sont conservées pour assurer la traçabilité.
+
+Les débats de la Chambre sont repérés dans les index officiels des sessions et par les liens localisés du visualiseur. L’identité stable repose sur la législature, la session, le type de publication et le numéro de séance ou de rapport. Le visualiseur est `source_page`; son PDF localisé direct est `document_url`. L’en-tête officiel fournit la date, commune aux deux langues officielles. Les documents Canadiana antérieurs à 1994 utilisent les clés officielles de volume et de séquence pour le regroupement bilingue. Les en-têtes courants fournissent titres et dates; les index reçoivent un titre explicite.
+
+L’inclusion des opérations de la Défense utilise les dates de l’opération canadienne, jamais la date de modification de la page. Le nom de l’opération canadienne et celui de la mission internationale associée sont conservés séparément. Les notices historiques de diplomatie, développement, sanctions et police ne servent qu’au repérage; le document officiel téléchargé doit satisfaire aux critères de période, de contenu substantiel sur Haïti et de famille. Le plafond de validation s’applique séparément à chaque source et chaque exécution possède ses propres diagnostics. Les dénombrements variables sont calculés au rendu.
+
+Le repérage des sanctions distingue trois fonctions documentaires. Les pages de politique nationale, les annonces, les documents d’autorisation et les examens réglementaires d’Affaires mondiales Canada constituent des documents de politique d’AMC. Les règlements, modifications et décrets publiés initialement dans la Gazette du Canada constituent des documents de la Gazette. Les règlements codifiés du site des lois du ministère de la Justice sont des consolidations juridiques distinctes. Les liens officiels relient ces documents, mais ces couches ne sont pas automatiquement dédoublonnées. Le repérage actuel des sanctions d’AMC concernant Haïti est validé séparément pour 2022–2026; le connecteur historique de 1991–1998 ne valide présentement aucun document candidat.
+
+## Unité documentaire et classification avant révision
+
+L’unité documentaire est la publication ou la séance officielle, non la page
+numérisée. Les pages pertinentes d’une même publication historique partagent un
+`document_id` stable; `component_urls` et les repères de page préservent chaque
+URL officielle et la provenance du texte combiné. Aucune URL de PDF n’est
+déduite. Si aucun fichier officiel ne couvre toute la publication, une page
+officielle sert d’URL principale reproductible et les autres restent des
+composantes explicites. Une publication dans les deux langues demeure une seule
+version bilingue; des versions distinctes ne sont créées que si l’éditeur
+officiel les publie séparément.
+
+Le contenu substantiel développe une politique ou action canadienne, une
+opération ou mission, l’aide, les sanctions ou la diplomatie, une question et
+réponse, un témoignage, une recommandation ou une évaluation factuelle
+significative d’Haïti. Les index, instruments de recherche, sommaires, pages de
+navigation, annonces de discussion ultérieure, adoptions formelles d’un rapport
+déjà conservé, corrections éditoriales, mentions à l’ordre du jour et
+comparaisons incidentes n’entrent pas dans la file active. Ils restent dans les
+diagnostics comme `non_document` ou `excluded`, avec leur URL et leur règle, et
+ne sont pas des échecs.
+
+Une décision humaine `reject` ne signifie pas que la mention est sans intérêt
+historique. Elle signifie que la publication ne franchit pas le seuil
+d’inclusion du corpus. La décision est prise au niveau du `document_id` et ne se
+propage qu’aux véritables versions linguistiques officielles.
+
+`review.csv` constitue la source d’autorité des décisions humaines. Une seule
+décision est inscrite par document logique et propagée à chaque version
+linguistique officielle active. `corpus.csv` contient uniquement les versions
+des documents retenus, chacune avec `review_status = retain`. Le total de
+documents du tableau de bord compte les valeurs `document_id` distinctes.
+
+Les dates de publication et de modification de page sont des champs distincts.
+Une date officielle explicite de publication ou de diffusion est privilégiée et
+partagée entre les véritables contreparties linguistiques. Une date de
+modification demeure une métadonnée de provenance et ne devient pas une date de
+publication lorsqu’une page permanente n’en fournit aucune.
+
+```{r}
+#| echo: false
+review_data <- utils::read.csv("../data/review.csv", stringsAsFactors = FALSE)
+corpus_data <- utils::read.csv("../data/corpus.csv", stringsAsFactors = FALSE)
+cat(sprintf("Le corpus révisé actuel contient %d documents logiques.",
+            length(unique(review_data$document_id))))
+```
+
+## Fichiers de données
+
+- `data/candidates.csv` : tous les documents candidats dont le contenu a été validé.
+- `data/review.csv` : décisions humaines et annotations durables.
+- `data/corpus.csv` : documents marqués `retain` ou `include`.
+- `data/concepts.csv` : vocabulaire analytique publiable.
+- `data/retrieval_diagnostics.csv` : résultats et échecs par source.
+
+## Environnement de développement
+
+Le crawler, le processus de révision et le site Quarto sont développés en R dans l’environnement Positron. OpenAI Codex est utilisé comme outil d’assistance à la programmation, au débogage, aux tests et à la documentation. Les décisions d’inclusion et d’exclusion du corpus demeurent des décisions de révision humaine. Codex n’admet aucun document de manière autonome dans le corpus révisé.

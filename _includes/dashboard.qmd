@@ -1,0 +1,321 @@
+<!-- Shared dashboard implementation. index.qmd and fr/index.qmd provide
+     site_lang and site_root; all summaries and table rows come from corpus.csv. -->
+
+```{r}
+source(file.path(site_root, "R", "site_i18n.R"), encoding = "UTF-8")
+L <- site_labels[[site_lang]]
+
+# Data preparation -----------------------------------------------------------
+read_or_empty <- function(path) if (file.exists(path)) read.csv(path, stringsAsFactors = FALSE, check.names = FALSE, na.strings = c("", "NA")) else data.frame()
+docs <- read_or_empty(file.path(site_root, "data", "corpus.csv"))
+required_columns <- c("document_id", "version_id", "title", "year", "publication_date", "page_last_modified", "institution", "families", "language", "document_type", "matched_concepts", "document_url", "format")
+for (nm in setdiff(required_columns, names(docs))) docs[[nm]] <- NA_character_
+if (!nrow(docs)) docs <- docs[FALSE, required_columns, drop = FALSE]
+
+split_long <- function(values, ids) {
+  out <- lapply(seq_along(values), function(i) {
+    z <- strsplit(ifelse(is.na(values[i]), "", values[i]), "\\|")[[1]]
+    z <- trimws(z)
+    z <- z[!is.na(z) & nzchar(z)]
+    if (!length(z) || !present(ids[i])) return(NULL)
+    data.frame(id = rep(ids[i], length(z)), value = z)
+  })
+  out <- Filter(Negate(is.null), out)
+  if (!length(out)) data.frame(id = character(), value = character()) else unique(do.call(rbind, out))
+}
+
+present <- function(x) !is.na(x) & nzchar(trimws(as.character(x)))
+safe_min <- function(x) if (length(x <- x[!is.na(x)])) min(x) else "—"
+safe_max <- function(x) if (length(x <- x[!is.na(x)])) max(x) else "—"
+label_text <- function(x) {
+  site_term(x, site_lang)
+}
+empty_note <- function(text) cat(sprintf('<p class="empty-state">%s</p>', text))
+
+analytical_docs <- docs[present(docs$document_id), , drop = FALSE]
+doc_years <- unique(analytical_docs[!is.na(analytical_docs$year), c("document_id", "year"), drop = FALSE])
+doc_institutions <- unique(analytical_docs[present(analytical_docs$institution), c("document_id", "institution"), drop = FALSE])
+fam <- split_long(analytical_docs$families, analytical_docs$document_id)
+con <- split_long(analytical_docs$matched_concepts, analytical_docs$document_id)
+check_bilingual_consistency(analytical_docs, doc_years, doc_institutions, fam, con, docs)
+
+navy <- "#17324d"
+blue <- "#527a95"
+red <- "#a44747"
+grid <- "#dfe5e8"
+plot_theme <- ggplot2::theme_minimal(base_size = 11) +
+  ggplot2::theme(
+    text = ggplot2::element_text(colour = navy),
+    plot.title = ggplot2::element_text(face = "bold", size = 12),
+    panel.grid.minor = ggplot2::element_blank(),
+    panel.grid.major = ggplot2::element_line(colour = grid, linewidth = 0.35),
+    axis.title = ggplot2::element_text(colour = "#51606b"),
+    legend.position = "bottom",
+    legend.title = ggplot2::element_text(face = "bold"),
+    plot.margin = ggplot2::margin(8, 10, 8, 4)
+  )
+
+# Plot rendering -------------------------------------------------------------
+interactive_plot <- function(p) {
+  widget <- plotly::ggplotly(p, tooltip = "text", dynamicTicks = FALSE)
+  widget <- plotly::config(widget, displayModeBar = FALSE, responsive = TRUE)
+  plotly::layout(widget, autosize = TRUE, hoverlabel = list(align = "left"))
+}
+```
+
+```{r results='asis'}
+logical_documents <- length(unique(analytical_docs$document_id))
+institutions <- length(unique(doc_institutions$institution))
+families <- length(unique(fam$value))
+date_range <- if (nrow(doc_years)) paste0(safe_min(doc_years$year), "–", safe_max(doc_years$year)) else "—"
+cards <- list(
+  c(logical_documents, L$documents),
+  c(date_range, L$date_range),
+  c(institutions, L$institutions),
+  c(families, L$document_families)
+)
+cat(sprintf('<div class="indicator-grid" aria-label="%s">', L$corpus_summary))
+for (card in cards) cat(sprintf('<div class="indicator-card"><strong>%s</strong><span>%s</span></div>', card[1], card[2]))
+cat('</div>')
+```
+
+## `r L$documents_over_time`
+
+```{r}
+#| fig-width: 12
+#| out-width: 100%
+if (nrow(doc_years)) {
+  year_counts <- aggregate(document_id ~ year, doc_years, length)
+  names(year_counts)[2] <- "count"
+  p <- ggplot2::ggplot(year_counts, ggplot2::aes(year, count, text = paste0(L$year, ": ", year, "<br>", L$documents, ": ", count))) +
+    ggplot2::geom_col(fill = navy, width = 0.72) +
+    ggplot2::scale_x_continuous(breaks = scales::breaks_pretty()) +
+    ggplot2::labs(x = NULL, y = L$documents) +
+    plot_theme
+  interactive_plot(p)
+} else empty_note(L$no_dated)
+```
+
+::: {.dashboard-grid}
+::: {.dashboard-panel}
+## `r L$families_over_time`
+
+```{r}
+family_years <- merge(fam, doc_years, by.x = "id", by.y = "document_id")
+if (nrow(family_years)) {
+  family_counts <- aggregate(id ~ year + value, family_years, length)
+  names(family_counts)[3] <- "count"
+  family_counts$family <- label_text(family_counts$value)
+  p <- ggplot2::ggplot(family_counts, ggplot2::aes(year, count, colour = family, group = family,
+    text = paste0(L$year, ": ", year, "<br>", L$family, ": ", family, "<br>", L$documents, ": ", count))) +
+    ggplot2::geom_line(linewidth = 0.8) +
+    ggplot2::geom_point(size = 1.8) +
+    ggplot2::scale_colour_manual(values = rep(c(navy, blue, red, "#73808a", "#8a7553", "#55766a"), length.out = length(unique(family_counts$family)))) +
+    ggplot2::scale_x_continuous(breaks = scales::breaks_pretty()) +
+    ggplot2::labs(x = NULL, y = L$documents, colour = L$document_family) +
+    plot_theme
+  interactive_plot(p)
+} else empty_note(L$no_families)
+```
+:::
+
+::: {.dashboard-panel}
+## `r L$documents_by_institution`
+
+```{r}
+if (nrow(doc_institutions)) {
+  institution_counts <- aggregate(document_id ~ institution, doc_institutions, length)
+  names(institution_counts)[2] <- "count"
+  p <- ggplot2::ggplot(institution_counts, ggplot2::aes(x = reorder(institution, count), y = count,
+    text = paste0(L$institution, ": ", institution, "<br>", L$documents, ": ", count))) +
+    ggplot2::geom_col(fill = navy, width = 0.68) +
+    ggplot2::coord_flip() +
+    ggplot2::labs(x = NULL, y = L$documents) +
+    plot_theme
+  interactive_plot(p)
+} else empty_note(L$no_institutions)
+```
+:::
+:::
+
+## `r L$language_availability`
+
+```{r}
+language_docs <- unique(analytical_docs[present(analytical_docs$language), c("document_id", "language"), drop = FALSE])
+if (nrow(language_docs)) {
+  language_docs$language_label <- ifelse(tolower(language_docs$language) == "en", L$english, ifelse(tolower(language_docs$language) == "fr", L$french, label_text(language_docs$language)))
+  language_counts <- aggregate(document_id ~ language_label, language_docs, length)
+  names(language_counts) <- c("language", "count")
+  language_counts$availability <- ifelse(language_counts$language == L$english, L$available_english, L$available_french)
+  p <- ggplot2::ggplot(language_counts, ggplot2::aes(availability, count, fill = language,
+    text = paste0(availability, ": ", count))) +
+    ggplot2::geom_col(width = 0.58, show.legend = FALSE) +
+    ggplot2::scale_fill_manual(values = setNames(c(navy, red), c(L$english, L$french)), na.value = blue) +
+    ggplot2::labs(x = NULL, y = L$documents) +
+    plot_theme
+  interactive_plot(p)
+} else empty_note(L$no_languages)
+```
+
+```{r results='asis'}
+cat(sprintf('<p class="chart-note">%s</p>', L$language_note))
+```
+
+::: {.dashboard-grid}
+::: {.dashboard-panel}
+## `r L$concepts_over_time`
+
+```{r}
+concept_years <- merge(con, doc_years, by.x = "id", by.y = "document_id")
+if (nrow(concept_years)) {
+  concept_counts <- aggregate(id ~ year + value, concept_years, length)
+  names(concept_counts)[3] <- "count"
+  concept_counts$concept <- label_text(concept_counts$value)
+  concept_colours <- rep(c(navy, blue, red, "#73808a", "#8a7553", "#55766a"), length.out = length(unique(concept_counts$concept)))
+  p <- ggplot2::ggplot(concept_counts, ggplot2::aes(year, count, colour = concept, group = concept,
+    text = paste0(L$year, ": ", year, "<br>", L$concept, ": ", concept, "<br>", L$documents, ": ", count))) +
+    ggplot2::geom_line(linewidth = 0.85) +
+    ggplot2::geom_point(size = 1.8) +
+    ggplot2::scale_colour_manual(values = concept_colours) +
+    ggplot2::scale_x_continuous(breaks = scales::breaks_pretty()) +
+    ggplot2::labs(x = NULL, y = L$documents, colour = L$analytical_concept) +
+    plot_theme
+  interactive_plot(p)
+} else empty_note(L$no_concepts)
+```
+:::
+
+::: {.dashboard-panel}
+## `r L$family_by_concept`
+
+```{r}
+if (nrow(fam) && nrow(con)) {
+  pairs <- merge(fam, con, by = "id")
+  counts <- aggregate(id ~ value.x + value.y, unique(pairs), length)
+  names(counts)[3] <- "count"
+  if (nrow(counts)) {
+    counts$concept <- label_text(counts$value.y)
+    counts$family <- label_text(counts$value.x)
+    p <- ggplot2::ggplot(counts, ggplot2::aes(concept, family, fill = count,
+      text = paste0(L$family, ": ", family, "<br>", L$concept, ": ", concept, "<br>", L$documents, ": ", count))) +
+      ggplot2::geom_tile(colour = "#f8f6f1", linewidth = 0.7) +
+      ggplot2::scale_fill_gradient(low = "#dce7ed", high = navy) +
+      ggplot2::labs(x = L$analytical_concept, y = L$document_family, fill = L$documents) +
+      plot_theme +
+      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 35, hjust = 1))
+    interactive_plot(p)
+  } else empty_note(L$no_pairs)
+} else empty_note(L$no_pairs)
+```
+:::
+:::
+
+## `r L$explore`
+
+```{r results='asis'}
+cat(sprintf('<p>%s</p>', L$search_intro))
+```
+
+```{r results='asis'}
+esc <- function(x) {
+  x <- ifelse(is.na(x), "", as.character(x))
+  x <- gsub("&", "&amp;", x, fixed = TRUE)
+  x <- gsub("<", "&lt;", x, fixed = TRUE)
+  x <- gsub(">", "&gt;", x, fixed = TRUE)
+  x <- gsub('"', "&quot;", x, fixed = TRUE)
+  x
+}
+collapse_unique <- function(x, transform = identity) {
+  x <- transform(x[present(x)])
+  paste(unique(x), collapse = " | ")
+}
+
+if (nrow(docs)) {
+  docs$.display_id <- docs$document_id
+  missing_id <- !present(docs$.display_id)
+  docs$.display_id[missing_id] <- paste0("row-", which(missing_id))
+  logical_ids <- unique(docs$.display_id)
+
+  filters <- list(
+    year = sort(unique(docs$year[!is.na(docs$year)])),
+    institution = sort(unique(docs$institution[present(docs$institution)])),
+    family = sort(unique(fam$value)),
+    concept = sort(unique(con$value))
+  )
+  cat('<div class="document-tools">')
+  cat(sprintf('<label class="search-field"><span>%s</span><input id="q" type="search" placeholder="%s" class="form-control"></label>', L$search_documents, L$search_placeholder))
+  cat('<div class="filter-row">')
+  for (nm in names(filters)) {
+    options <- paste(sprintf('<option value="%s">%s</option>', esc(filters[[nm]]), esc(label_text(filters[[nm]]))), collapse = "")
+    cat(sprintf('<label><span>%s</span><select id="f-%s" class="form-select"><option value="">%s</option>%s</select></label>', L$filter[[nm]], nm, L$all, options))
+  }
+  cat('</div></div>')
+  headers <- c(L$year, L$title, L$institution, L$family, L$document_type, L$concepts, L$format, L$publication_modification, L$official_links)
+  cat(sprintf('<div class="table-responsive corpus-table-wrap"><table id="corpus-table" class="table"><thead><tr>%s</tr></thead>', paste(sprintf('<th>%s</th>', headers), collapse = "")))
+  for (id in logical_ids) {
+    d <- docs[docs$.display_id == id, , drop = FALSE]
+    year <- if (any(!is.na(d$year))) as.character(d$year[which(!is.na(d$year))[1]]) else "—"
+    institution <- collapse_unique(d$institution)
+    family_raw <- collapse_unique(d$families)
+    family <- collapse_unique(unlist(strsplit(paste(d$families[present(d$families)], collapse = "|"), "\\|")), label_text)
+    type <- collapse_unique(d$document_type, label_text)
+    concept_values <- unique(trimws(unlist(strsplit(paste(d$matched_concepts[present(d$matched_concepts)], collapse = "|"), "\\|"))))
+    concept_values <- concept_values[nzchar(concept_values)]
+    concepts <- paste(label_text(concept_values), collapse = " | ")
+    preferred_title <- d$title[present(d$language) & tolower(d$language) == site_lang & present(d$title)]
+    if (!length(preferred_title)) preferred_title <- d$title[present(d$title)]
+    title <- if (length(preferred_title)) preferred_title[1] else L$untitled
+    all_titles <- paste(d$title[present(d$title)], collapse = " | ")
+    formats <- collapse_unique(d$format)
+    publication_dates <- unique(d$publication_date[present(d$publication_date)])
+    modification_dates <- unique(d$page_last_modified[present(d$page_last_modified)])
+    title_row <- if (length(preferred_title)) which(d$title == preferred_title[1] & present(d$title))[1] else NA_integer_
+    shared_publication <- if (length(publication_dates) == 1) publication_dates else if (!is.na(title_row) && present(d$publication_date[title_row])) d$publication_date[title_row] else if (length(publication_dates)) publication_dates[1] else character()
+    shared_modification <- if (!length(shared_publication) && length(modification_dates) == 1) modification_dates else if (!length(shared_publication) && !is.na(title_row) && present(d$page_last_modified[title_row])) d$page_last_modified[title_row] else character()
+    date_parts <- c(if (length(shared_publication)) paste0(L$published, " ", shared_publication), if (length(shared_modification)) paste0(L$modified, " ", shared_modification))
+    date_text <- if (length(date_parts)) paste(esc(date_parts), collapse = "<br>") else "—"
+    links <- character(nrow(d))
+    for (j in seq_len(nrow(d))) {
+      language <- if (!present(d$language[j])) L$official_text else if (tolower(d$language[j]) == "en") L$official_english else if (tolower(d$language[j]) == "fr") L$official_french else paste0(label_text(d$language[j]), " ↗")
+      aria <- if (!present(d$language[j])) L$official_text_aria else if (tolower(d$language[j]) == "en") L$official_english_aria else if (tolower(d$language[j]) == "fr") L$official_french_aria else paste0(label_text(d$language[j]), if (site_lang == "fr") " (s’ouvre dans un nouvel onglet)" else " (opens in a new tab)")
+      links[j] <- if (present(d$document_url[j])) sprintf('<a href="%s" class="official-link" target="_blank" rel="noopener noreferrer" aria-label="%s">%s</a>', esc(d$document_url[j]), esc(aria), esc(language)) else ""
+    }
+    search_text <- paste(all_titles, institution, family, type, concepts, formats, collapse = " ")
+    cat(sprintf('<tbody class="document-group" data-year="%s" data-institution="%s" data-family="%s" data-concept="%s" data-search="%s"><tr><td>%s</td><td class="document-title">%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td class="official-links">%s</td></tr>',
+      esc(year), esc(institution), esc(family_raw), esc(paste(concept_values, collapse = "|")), esc(search_text), esc(year), esc(title), esc(institution), esc(family), esc(type), esc(concepts), esc(if (nzchar(formats)) formats else "—"), date_text, paste(links[nzchar(links)], collapse = " ")))
+    cat('</tbody>')
+  }
+  cat(sprintf('</table><p id="no-results" class="empty-state" hidden>%s</p></div>', L$no_matches))
+} else empty_note(L$empty_corpus)
+```
+
+```{=html}
+<script>
+// Client-side filtering expects one tbody.document-group per logical document
+// and select IDs prefixed with f-. Hidden groups remain in the accessible table.
+document.addEventListener('DOMContentLoaded', () => {
+  const table = document.querySelector('#corpus-table');
+  if (!table) return;
+  const controls = [...document.querySelectorAll('#q, [id^="f-"]')];
+  const groups = [...table.querySelectorAll('tbody.document-group')];
+  const noResults = document.querySelector('#no-results');
+  const apply = () => {
+    const query = (document.querySelector('#q')?.value || '').trim().toLowerCase();
+    let visible = 0;
+    groups.forEach(group => {
+      let show = `${group.textContent} ${group.dataset.search || ''}`.toLowerCase().includes(query);
+      document.querySelectorAll('[id^="f-"]').forEach(select => {
+        if (!select.value) return;
+        const key = select.id.slice(2);
+        const values = (group.dataset[key] || '').split('|').map(value => value.trim().toLowerCase());
+        show = show && values.includes(select.value.toLowerCase());
+      });
+      group.hidden = !show;
+      if (show) visible += 1;
+    });
+    if (noResults) noResults.hidden = visible > 0;
+  };
+  controls.forEach(control => control.addEventListener('input', apply));
+});
+</script>
+```

@@ -8,8 +8,8 @@ case_labels:
 start_year: 1991
 end_year: 2026
 request_delay_seconds: 1.0
-request_timeout_seconds: 30
-request_retries: 2
+request_timeout_seconds: 15
+request_retries: 1
 user_agent: "CanadaHaitiAcademicCorpus/1.0 (non-commercial academic research; contact: repository maintainer)"
 excerpt_characters: 500
 max_discovered_per_source: 80

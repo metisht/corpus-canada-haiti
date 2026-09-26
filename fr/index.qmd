@@ -1,0 +1,16 @@
+---
+title: "Canada–Haïti : corpus des discours et politiques officiels"
+pagetitle: "Canada–Haïti : corpus des discours et politiques officiels"
+title-prefix: ""
+subtitle: "Un corpus longitudinal consacré à la manière dont les institutions officielles canadiennes ont représenté Haïti et formulé l’engagement du Canada envers le pays de 1991 à 2026. Il rassemble des documents de politique publique, des travaux parlementaires, des documents militaires et policiers, des déclarations diplomatiques, des publications sur le développement, des sanctions et des documents budgétaires afin de suivre l’évolution des récits sur la sécurité, la démocratie, l’instabilité, la migration et l’intervention."
+page-layout: full
+toc: false
+lang: fr
+---
+
+```{r}
+site_lang <- "fr"
+site_root <- ".."
+```
+
+{{< include ../_includes/dashboard.qmd >}}

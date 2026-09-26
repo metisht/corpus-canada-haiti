@@ -1,3 +1,7 @@
+# Polite HTTP retrieval and local response caching for crawler runs.
+# Called with official URLs and case configuration; returns cached-file metadata.
+# Cache writes occur only on misses, with per-host delays and explicit timeouts.
+
 .last_request_time <- new.env(parent = emptyenv())
 
 cache_path <- function(url, ext = "bin") file.path("data", "cache", paste0(digest::digest(url, "sha256"), ".", ext))

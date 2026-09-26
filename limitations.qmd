@@ -6,4 +6,22 @@ Official search interfaces change, use JavaScript, rate-limit automation, or exp
 
 The first validation reports gaps in `data/retrieval_diagnostics.csv`. In particular, historical CIDA material, older parliamentary scans, RCMP mission archives, white papers, and budgets may require additional catalogue endpoints or curated official seed listings. A retrieval failure means coverage is missing, not that no relevant official documents exist.
 
+Historical catalogue result counts are not coverage counts. Broad publications, inaccessible scans, or documents whose extracted text does not substantively concern Haiti are excluded and reported diagnostically. OCR may prevent validation even when catalogue metadata appears relevant. Page-modification dates do not establish historical operation coverage. Bilingual pairing depends on authoritative links or identifiers; missing counterparts remain explicit diagnostics. No family is described as covered until focused and bounded validation passes.
+
+The accurate historical-sanctions finding is limited: the 1991–1998 connector validated no historical candidate documents. It does not imply that Global Affairs Canada lacks Haiti sanctions documents; current GAC policy and announcement pages are covered by a separate connector. Historical Gazette issues, archived orders, and foreign-affairs records can remain undiscovered or unreadable because of incomplete indexes and OCR.
+
 This tool supports research judgment; it does not replace it. Consult the linked official record before citation.
+
+Automatic pre-review classification can produce false negatives, especially
+when OCR is poor or a short substantive passage resembles a procedural mention.
+Page-by-page historical archives can split headings, dates, and relevant text
+across images. Some genuinely bilingual publications cannot be separated
+cleanly and therefore remain one bilingual record. Ambiguous classifications,
+page groupings, dates, and bilingual relationships still require human review.
+An excluded list, index, procedural reference, comparison, or isolated mention
+may still be historically useful outside the corpus's substantive-inclusion
+scope. Its exclusion rationale remains auditable even after it leaves the active
+review queue.
+Dashboard document totals use distinct logical identifiers and depend on the
+reconciled retained corpus; stale rendered site artifacts can otherwise display
+an earlier count until the site is regenerated.

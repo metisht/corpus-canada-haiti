@@ -1,0 +1,41 @@
+<!-- Shared post-render navigation localization. Quarto supplies the navbar,
+     brand, search control, and footer queried below. The language switch keeps
+     equivalent pages paired and marks the current language for assistive tools. -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const inFrench = location.pathname.includes('/fr/');
+  const file = location.pathname.split('/').pop() || 'index.html';
+  const navLinks = [...document.querySelectorAll('.navbar-nav .nav-link')].slice(0, 3);
+  const labels = inFrench ? ['Corpus', 'Méthodologie', 'Limites'] : ['Corpus', 'Methodology', 'Limitations'];
+  const pages = ['index.html', 'methodology.html', 'limitations.html'];
+  // Quarto builds one navbar; replace its labels and preserve page equivalence.
+  navLinks.forEach((link, index) => {
+    const text = link.querySelector('.menu-text');
+    if (text) text.textContent = labels[index];
+    link.href = inFrench ? pages[index] : pages[index];
+  });
+
+  const brand = document.querySelector('.navbar-brand');
+  const brandTitle = document.querySelector('.navbar-title');
+  if (brand) brand.href = inFrench ? 'index.html' : 'index.html';
+  if (brandTitle) brandTitle.textContent = inFrench
+    ? 'Canada–Haïti : corpus des discours et politiques officiels'
+    : 'Canada–Haiti: Official Discourse and Policy Corpus';
+
+  const search = document.querySelector('#quarto-search');
+  if (search && inFrench) search.title = 'Rechercher';
+  const footer = document.querySelector('.nav-footer');
+  if (footer && inFrench) footer.textContent = 'Corpus universitaire ouvert — consultez toujours le document officiel lié.';
+
+  // Build explicit EN/FR links instead of guessing translated page slugs.
+  const nav = document.querySelector('.navbar-nav');
+  if (nav) {
+    const item = document.createElement('li');
+    item.className = 'nav-item language-switch';
+    const enHref = inFrench ? `../${file}` : file;
+    const frHref = inFrench ? file : `fr/${file}`;
+    item.innerHTML = `<a href="${enHref}" lang="en" ${inFrench ? '' : 'aria-current="page"'}>EN</a><span aria-hidden="true">|</span><a href="${frHref}" lang="fr" ${inFrench ? 'aria-current="page"' : ''}>FR</a>`;
+    nav.appendChild(item);
+  }
+});
+</script>

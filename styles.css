@@ -1,0 +1,383 @@
+/* Shared site stylesheet. Selectors under .quarto-* and #quarto-* intentionally
+   target Quarto-generated markup; dashboard selectors match dashboard.qmd. */
+
+/* Variables and colours --------------------------------------------------- */
+:root {
+  --corpus-navy: #17324d;
+  --corpus-blue: #527a95;
+  --corpus-red: #a44747;
+  --corpus-paper: #f8f6f1;
+  --corpus-white: #fff;
+  --corpus-ink: #263642;
+  --corpus-muted: #62717c;
+  --corpus-rule: #dce2e5;
+  --corpus-soft: #edf2f4;
+}
+
+/* Typography -------------------------------------------------------------- */
+body {
+  background: var(--corpus-paper);
+  color: var(--corpus-ink);
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.65;
+}
+
+/* Structure and navigation ----------------------------------------------- */
+.navbar {
+  min-height: 3.6rem;
+  padding-block: 0.35rem;
+  background: var(--corpus-navy) !important;
+  border-bottom: 3px solid var(--corpus-red);
+}
+
+.navbar-brand {
+  color: var(--corpus-white) !important;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.navbar-nav .nav-link {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+.navbar-brand:hover,
+.navbar-brand:focus,
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link:focus {
+  color: var(--corpus-white) !important;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link:focus {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-nav .nav-link.active {
+  color: var(--corpus-white) !important;
+  box-shadow: inset 0 -2px 0 var(--corpus-red);
+}
+
+/* Bilingual navigation ---------------------------------------------------- */
+.language-switch {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: 0.5rem;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.language-switch a {
+  color: rgba(255, 255, 255, 0.88);
+  text-decoration: none;
+}
+
+.language-switch a:hover,
+.language-switch a:focus,
+.language-switch a[aria-current="page"] {
+  color: var(--corpus-white);
+  text-decoration: underline;
+  text-underline-offset: 0.2rem;
+}
+
+.navbar a:focus-visible,
+.navbar button:focus-visible,
+#quarto-search button:focus-visible {
+  outline: 2px solid var(--corpus-white);
+  outline-offset: 2px;
+}
+
+#quarto-search,
+#quarto-search button,
+#quarto-search svg,
+.navbar-toggler,
+.navbar-toggler-icon {
+  color: var(--corpus-white) !important;
+  opacity: 1;
+}
+
+#quarto-search svg {
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+/* Quarto layout overrides ------------------------------------------------- */
+#quarto-content {
+  max-width: 1180px;
+  margin-inline: auto;
+}
+
+main.content {
+  padding-top: 2.6rem;
+  padding-bottom: 4rem;
+}
+
+.quarto-title-block .quarto-title-banner {
+  padding: 0 0 1.35rem;
+  background: transparent;
+  color: var(--corpus-navy);
+  border-bottom: 1px solid var(--corpus-rule);
+}
+
+.quarto-title h1.title {
+  max-width: 850px;
+  margin-bottom: 0.55rem;
+  color: var(--corpus-navy);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 4vw, 3.15rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+}
+
+.quarto-title .subtitle {
+  max-width: 760px;
+  color: var(--corpus-muted);
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
+h2, h3 {
+  color: var(--corpus-navy);
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+h2 {
+  margin-top: 2.8rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--corpus-rule);
+  font-size: 1.45rem;
+}
+
+a { color: #315f7b; }
+a:hover { color: var(--corpus-red); }
+
+/* Dashboard summary cards ------------------------------------------------- */
+.indicator-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin: 1.75rem 0 2.5rem;
+}
+
+.indicator-card {
+  min-height: 112px;
+  padding: 1.15rem 1rem;
+  background: var(--corpus-white);
+  border: 1px solid var(--corpus-rule);
+  border-top: 3px solid var(--corpus-blue);
+  border-radius: 3px;
+}
+
+.indicator-card strong,
+.indicator-card span { display: block; }
+
+.indicator-card strong {
+  color: var(--corpus-navy);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.65rem;
+  line-height: 1.2;
+}
+
+.indicator-card span {
+  margin-top: 0.35rem;
+  color: var(--corpus-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+/* Dashboard charts -------------------------------------------------------- */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.dashboard-panel {
+  min-width: 0;
+  padding: 0 1.15rem 1rem;
+  background: var(--corpus-white);
+  border: 1px solid var(--corpus-rule);
+  border-radius: 3px;
+}
+
+.dashboard-panel h2 {
+  margin-top: 0;
+  font-size: 1.2rem;
+}
+
+.cell-output-display img { max-width: 100%; }
+
+.plotly.html-widget,
+.plotly.html-widget > div,
+.js-plotly-plot,
+.plot-container,
+.svg-container {
+  max-width: 100%;
+}
+
+.plotly.html-widget {
+  width: 100% !important;
+}
+
+#documents-over-time .cell-output-display,
+#documents-over-time .cell-output-display > div,
+#documents-over-time figure,
+#documents-over-time figure p,
+#documents-over-time img {
+  width: 100%;
+}
+
+.empty-state {
+  margin: 1rem 0;
+  padding: 1rem 1.1rem;
+  color: var(--corpus-muted);
+  background: var(--corpus-soft);
+  border-left: 3px solid var(--corpus-blue);
+}
+
+.chart-note {
+  margin-top: 0.65rem;
+  color: var(--corpus-muted);
+  font-size: 0.84rem;
+  font-style: italic;
+}
+
+/* Search and filters ------------------------------------------------------ */
+.document-tools {
+  margin: 1.25rem 0 1rem;
+  padding: 1rem;
+  background: var(--corpus-white);
+  border: 1px solid var(--corpus-rule);
+}
+
+.document-tools label span {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: var(--corpus-muted);
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.search-field { display: block; }
+.search-field input { max-width: 620px; }
+
+.filter-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.8rem;
+}
+
+.form-control, .form-select {
+  border-color: #bcc8ce;
+  border-radius: 2px;
+  font-size: 0.9rem;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--corpus-blue);
+  box-shadow: 0 0 0 0.15rem rgba(82, 122, 149, 0.15);
+}
+
+/* Document table ---------------------------------------------------------- */
+.corpus-table-wrap {
+  max-height: 680px;
+  background: var(--corpus-white);
+  border: 1px solid var(--corpus-rule);
+}
+
+#corpus-table {
+  min-width: 1080px;
+  margin-bottom: 0;
+  font-size: 0.83rem;
+  line-height: 1.4;
+}
+
+#corpus-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 0.75rem 0.65rem;
+  color: var(--corpus-white);
+  background: var(--corpus-navy);
+  border: 0;
+  font-size: 0.71rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: bottom;
+}
+
+#corpus-table td {
+  padding: 0.7rem 0.65rem;
+  border-color: var(--corpus-rule);
+  vertical-align: top;
+}
+
+#corpus-table tbody tr:nth-child(even) { background: #f5f7f7; }
+#corpus-table tbody tr:hover { background: #edf2f4; }
+#corpus-table tbody.document-group + tbody.document-group tr:first-child td {
+  border-top: 2px solid #b7c5cc;
+}
+
+.grouped-cell {
+  background: rgba(237, 242, 244, 0.55);
+  vertical-align: top !important;
+}
+
+.document-title { min-width: 190px; font-weight: 650; color: var(--corpus-navy); }
+.official-links { min-width: 112px; }
+
+/* Official-source links and footer --------------------------------------- */
+.official-link {
+  display: inline-block;
+  margin: 0 0.3rem 0.25rem 0;
+  padding: 0.16rem 0.42rem;
+  color: var(--corpus-navy);
+  background: var(--corpus-soft);
+  border: 1px solid #cdd8dd;
+  border-radius: 2px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.official-link:hover { color: var(--corpus-white); background: var(--corpus-red); }
+
+.nav-footer {
+  color: #d8e0e5;
+  background: var(--corpus-navy);
+  font-size: 0.82rem;
+}
+
+/* Responsive layout ------------------------------------------------------- */
+@media (max-width: 900px) {
+  .indicator-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .filter-row { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+}
+
+@media (max-width: 680px) {
+  main.content { padding-top: 1.6rem; }
+  .indicator-grid { grid-template-columns: 1fr; }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .filter-row { grid-template-columns: 1fr; }
+  .quarto-title h1.title { font-size: 2rem; }
+}
+
+@media (max-width: 420px) {
+  .indicator-grid { grid-template-columns: 1fr; }
+  .indicator-card { min-height: 0; }
+}
