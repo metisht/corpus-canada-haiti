@@ -1,6 +1,6 @@
 # Canada–Haiti official documents corpus
 
-A small reusable R crawler and Quarto website for official Canadian documents substantively concerning Haiti/Haïti, 1991–2026. Discovery uses free official Canadian sources; each candidate HTML page or PDF is opened and checked. Analytical concepts are editable coding fields, not inclusion criteria.
+A longitudinal corpus examining how Canadian official institutions have represented Haiti and framed Canadian security and intervention in the country from 1991 to 2026. It brings together policy documents, parliamentary records, military and police materials, diplomatic statements, development publications, sanctions, and budget documents. Analytical concepts are coding fields, not inclusion criteria.
 
 ## Install
 
@@ -36,9 +36,13 @@ The public dashboard counts documents with distinct `document_id` values.
 
 Parliamentary identity uses parliament, session, publication type, and sitting or report number. A House `DocumentViewer` page is provenance (`source_page`); its direct localized PDF is the document (`document_url`). Official language links group English and French versions. Defence records retain both the Canadian operation name and the associated international mission. Historical catalogue hits are discovery leads only: retrieved documents must independently pass date, substantive-Haiti, and family checks.
 
-Haiti sanctions are collected in three linked but distinct documentary layers: Global Affairs Canada policy and announcement pages, original Canada Gazette instruments, and consolidated Justice Laws regulations. A GAC sanctions page does not need to be a regulation to qualify. The historical 1991–1998 sanctions connector currently validates no historical candidate documents; this finding does not apply to current GAC Haiti-sanctions material.
+Defence-policy discovery starts from official National Defence presentation and Government of Canada Publications catalogue pages and follows their published PDF and language links. Retrieved policies remain subject to the same temporal and substantive-Haiti criteria as other documents.
 
-Use `--max-valid-per-source=N` to override the validation limit. The legacy `--max-valid=N` spelling retains the same per-source meaning.
+Spatial coding begins with bilingual lexical proposals drawn from retained text. `data/spatial_review.csv` preserves occurrence-level evidence, while `data/spatial_review_queue.csv` consolidates review at `document_id + dimension + proposed_code`. A human reviewer confirms or dismisses each proposal; generic terms do not qualify without an observable spatial relation involving Haiti. Typical dismissals are incidental geography, an affiliation or job title, regulatory boilerplate, a term concerning another country or relationship, or insufficient context. The completed queue contains 156 `confirm`, 62 `dismiss`, and 0 `pending` decisions.
+
+Haiti sanctions are collected in three linked but distinct documentary layers: Global Affairs Canada policy and announcement pages, original *Canada Gazette* instruments, and consolidated Justice Laws regulations. A Global Affairs Canada sanctions page does not need to be a regulation to qualify.
+
+Use `--max-valid-per-source=N` to override the validation limit.
 
 Only after reviewing limited results, run the complete live crawl explicitly:
 
@@ -60,7 +64,7 @@ Run the one small workflow check with `Rscript scripts/smoke_check.R`.
 
 ## Development environment
 
-The crawler, review workflow, and Quarto website are developed in R using the Positron IDE. OpenAI Codex is used as an assisted-development tool for programming, debugging, testing, and documentation. Corpus inclusion and exclusion decisions remain human review decisions. Codex does not autonomously admit documents to the reviewed corpus.
+The crawler, review workflow, and Quarto website are developed in R using the Positron IDE. OpenAI Codex assists with programming, testing, and documentation. Human researchers remain responsible for corpus review, analytical coding, and methodological choices.
 
 ## Configuration and outputs
 
@@ -108,3 +112,11 @@ git push -u origin main
 ```
 
 In repository settings, set Pages to **GitHub Actions**. The included workflow renders and deploys the site; it never launches the crawler.
+
+## Operational briefing board
+
+The bilingual dashboard reads a curated engagement layer from `data/engagements.csv`, with many-to-many documentary evidence in `data/engagement_documents.csv` and instruments in `data/engagement_instruments.csv`. A `document_id` identifies an official source; an `engagement_id` identifies a documented Canadian action. Publications, debates, reports, and budgets do not automatically become timeline points. An engagement can combine military, police, institutional, diplomatic, regulatory, development, financial, and humanitarian instruments.
+
+Engagement dates describe the Canadian action and never inherit a page-modification or publication date as a duration. Canadian operations remain distinct from international missions, including the UNMIH and UNSMIH phases of STANDARD. The 1993–1996 sequence separately represents CAULDRON, embargo enforcement, evacuation planning, the 1994 UNMIH advance team, the documented Canadian police-training proposal, PIVOT, and the two STANDARD phases. External reporting may guide archival searches but is not evidence until corroborated by a retained official Canadian source. The timeline measures engagements, not the number of documents, and does not infer causality from chronological succession.
+
+The public board places each engagement in one or more horizontal instrument layers: military operations, police activity, development and institutional support, diplomatic and multilateral action, sanctions and regulation, and financial or humanitarian assistance. Repeated, vertically connected marks identify the same engagement across layers rather than additional engagements or documents. Filters can isolate or combine these repertoires of action. The layers show the sedimentation, coexistence, and modular combination of documented instruments. Their vertical order implies neither hierarchy nor causal dependence. Point density is not a measure of intervention intensity.

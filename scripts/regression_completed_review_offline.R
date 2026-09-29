@@ -1,6 +1,6 @@
-# Offline fixture for the completed 137-document review state.
+# Offline fixture for the completed 150-document review state.
 # Reads project CSVs only and asserts retained membership, rejection audit history,
-# bilingual grouping, uniqueness, UTF-8 validity, and the known 209-version fixture.
+# bilingual grouping, uniqueness, UTF-8 validity, and the known 235-version fixture.
 
 source("R/utils.R")
 source("R/discover.R")
@@ -16,12 +16,12 @@ corpus <- safe_read_csv("data/corpus.csv")
 diagnostics <- safe_read_csv("data/retrieval_diagnostics.csv")
 changes <- safe_read_csv("data/validation_changes.csv")
 
-stopifnot(nrow(review) == 137L, all(review$decision == "retain"),
+stopifnot(nrow(review) == 150L, all(review$decision == "retain"),
           !any(review$decision %in% c("pending", "reject")),
-          length(unique(review$document_id)) == 137L)
+          length(unique(review$document_id)) == 150L)
 stopifnot(
-  nrow(corpus) == 209L,
-  dplyr::n_distinct(corpus$document_id) == 137L,
+  nrow(corpus) == 235L,
+  dplyr::n_distinct(corpus$document_id) == 150L,
   all(corpus$review_status == "retain"),
   !any(corpus$review_status %in% c("pending", "reject")),
   setequal(unique(corpus$document_id),
@@ -46,7 +46,7 @@ stopifnot(pre_review_classification(
   "Haiti appears in a country list.", "")$status == "excluded")
 stopifnot(!any(duplicated(candidates$version_id)),
           !any(duplicated(paste(candidates$document_id, candidates$language))))
-stopifnot(length(unique(corpus$version_id)) == 209L,
+stopifnot(length(unique(corpus$version_id)) == 235L,
           !any(duplicated(paste(corpus$document_id, corpus$language))))
 stopifnot(!any(vapply(candidates[c("title", "relevance_excerpt", "extracted_text")],
                       contains_mojibake, logical(1))))

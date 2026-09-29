@@ -2,81 +2,104 @@
 title: "Methodology"
 ---
 
-## Scope and inclusion
+## Corpus purpose and scope
 
-The corpus covers official Canadian documents that substantively concern Haiti/Haïti from 1991 through 2026. Discovery uses only configured official listings, archives, search systems, and APIs. Each discovered record is opened and its extracted HTML or PDF text evaluated. A case-label match makes it a candidate; analytical concepts are coded afterward and are never required for inclusion.
+A longitudinal corpus examining how Canadian official institutions have represented Haiti and framed Canadian security and intervention in the country from 1991 to 2026. It brings together policy documents, parliamentary records, military and police materials, diplomatic statements, development publications, sanctions, and budget documents to trace changing narratives and practices of security and intervention.
 
-This is not an exhaustive archive of every Canadian document that mentions Haiti. Documents are included when their substantive content concerns Haiti, Canadian policy toward Haiti, or Canada’s engagement with the country. Analytical concepts are used to code and examine the corpus; they are not mandatory inclusion criteria.
+The documentary unit is an official publication or parliamentary sitting, not an individual digitized page. Inclusion does not require any analytical concept. A document enters the corpus when its substantive content develops Canadian policy or action, an operation or mission, assistance, sanctions, diplomacy, testimony, a recommendation, or a meaningful official assessment concerning Haiti. The corpus is therefore focused on security and intervention rather than general Canada–Haiti relations.
 
-## Reproducible workflow
+## Official sources, discovery, and retrieval
 
-1. `config/case.yml` defines the case, labels, dates, and polite-request limits.
-2. `config/sources.csv`, `families.csv`, and `terms.csv` define discovery, multi-label families, and editable concepts.
-3. `Rscript run.R` performs the capped live validation, caches downloads locally, and records failures without stopping other sources.
-4. New logical documents enter `data/review.csv` as `pending`. Researchers change `decision` to `retain` or `reject` and may add notes; later runs preserve these rows. Rejected documents leave the active queue only after their provenance, affected versions, reviewer, timestamp, and rationale are preserved in diagnostics and validation history.
-5. Each official English or French text retains its language, title, URL, and extracted content. Explicit official alternate-language links and equivalent Gazette identifiers connect bilingual texts as one document; title similarity is never used. Consolidated Justice Laws remain distinct from original Gazette publications.
-6. The crawler writes all candidates, retained records, vocabulary, and diagnostics separately. Canonical URLs remove duplicate records while preserving multiple family labels.
+Discovery is restricted to configured official Canadian listings, archives, catalogues, search systems, and APIs. Search results and catalogue notices are discovery aids rather than corpus records: the official document must be retrieved, fall within the temporal scope, and satisfy the substantive-Haiti criterion. HTML and PDF text are extracted locally, while retrieval outcomes and failures remain in diagnostics. Direct document URLs, discovery pages, component URLs, formats, and retrieval metadata are preserved for provenance.
 
-Publication dates, page modification dates, and operation/event dates are stored separately. The analytical `year` uses an event start for operation records, otherwise a publication date, and only falls back to a page-modification year when the publication date is unavailable; `date_source` records that choice. Dates that cannot be established remain `uncertain` for manual review. The direct official URL and per-record discovery page or endpoint are retained for provenance.
+`source` identifies the official connector or collection through which a document was discovered. It may differ from the institution that issued the document. `document_type` identifies the document’s precise administrative or editorial form and is more specific than document family. Source, institution, family, and document type are therefore distinct variables.
 
-House debates are discovered through official session indexes and localized viewer links. Stable identity is derived from parliament, session, publication type, and sitting or report number. The viewer is `source_page`; its direct localized PDF is `document_url`. The authoritative heading supplies the date, shared by both official languages. Pre-1994 Canadiana records use official volume and sequence keys for bilingual grouping. Historical running headers supply titles and dates; index pages receive explicit index titles.
+Publication dates, page-modification dates, and operation or event dates are stored separately. The analytical year uses an operation’s start date for operation records and otherwise uses the official publication date; uncertain dates remain explicitly uncertain rather than being inferred from unrelated metadata.
 
-Defence inclusion uses Canadian operation dates, never page-modification dates. Canadian operation names and associated international missions are stored separately. Historical diplomacy, development, sanctions, and police catalogue records are discovery routes only; the downloaded official document must pass date, substantive-Haiti, and required-family validation. The validation cap applies independently to each source, and each run has separate diagnostics. Changing counts are derived from the data during rendering.
+## Document identity and official-language versions
 
-Sanctions discovery preserves three documentary functions. Global Affairs Canada country-policy pages, announcements, permit material, and regulatory reviews are GAC policy records. Original regulations, amendments, and orders published in the Canada Gazette are Gazette records. Consolidated regulations on Justice Laws are separate legal consolidations. Official links connect related records, but the layers are not automatically deduplicated. Current GAC Haiti-sanctions discovery is validated separately for 2022–2026; the historical 1991–1998 sanctions connector presently validates no candidate documents.
+Stable `document_id` values identify logical documents. Official English and French versions share a document identity only when authoritative links, publication identifiers, or archival structure establish the relationship; title similarity alone is insufficient. Each version retains its own `version_id`, language, title, URL, and extracted text. A genuinely bilingual publication may remain one bilingual version when the official record cannot be separated reliably.
 
-## Data files
+Historical parliamentary identity uses the parliament, session, publication type, and sitting or report number. Page-level archival components belonging to one publication share a logical identity, while their URLs remain explicit provenance. Consolidated legislation remains distinct from the original regulations and amendments published in the *Canada Gazette*.
 
-- `data/candidates.csv`: all content-validated candidates.
-- `data/review.csv`: durable human decisions and annotations.
-- `data/corpus.csv`: records marked `retain` or `include`.
-- `data/concepts.csv`: publishable analytical vocabulary.
-- `data/retrieval_diagnostics.csv`: per-source outcomes and failures.
+## Inclusion, exclusion, and human review
 
-## Development environment
+New logical documents enter a durable review table. Human reviewers retain or reject each document and may record notes, reviewer identity, and a timestamp. Decisions apply at the logical-document level and propagate only to its verified official-language versions. The active corpus contains the versions of retained documents; rejected and diagnostically excluded material remains auditable outside it.
 
-The crawler, review workflow, and Quarto website are developed in R using the Positron IDE. OpenAI Codex is used as an assisted-development tool for programming, debugging, testing, and documentation. Corpus inclusion and exclusion decisions remain human review decisions. Codex does not autonomously admit documents to the reviewed corpus.
+Indexes, navigation pages, contents pages, editorial corrections, notices of future discussion, formal adoption of an already retained report, and incidental mentions do not satisfy the substantive-inclusion threshold. Their exclusion does not imply that they lack historical interest outside this corpus.
 
-## Documentary unit and pre-review classification
+## Institutions, document families, and types
 
-The documentary unit is the official publication or sitting, not a digitized
-page. Relevant pages in one historical publication share one stable
-`document_id`; `component_urls` and page markers preserve every official URL and
-the provenance of combined text. No PDF URL is inferred. If no official file
-covers the whole publication, one official page is the reproducible primary URL
-and all other relevant pages remain explicit components. A publication that
-contains both languages remains one bilingual version; separate versions exist
-only when the official publisher provides them separately.
+Institution identifies the public organization officially responsible for issuing or producing a document. It is determined from the official publication page, metadata, or document header, not from organizations merely mentioned in the text.
 
-Substantive content develops Canadian policy or action, an operation or mission,
-assistance, sanctions or diplomacy, a question and answer, testimony, a
-recommendation, or a meaningful factual assessment of Haiti. Indexes, finding
-aids, contents and navigation pages, future-discussion notices, formal adoption
-of an already retained report, editorial corrections, agenda mentions, and
-incidental comparisons do not enter active review. They remain in diagnostics
-as `non_document` or `excluded`, with their URL and rule, not as failures.
+Institutional classification identifies the official sites where security and intervention concerning Haiti are produced, debated, authorized, financed, implemented, or evaluated. It permits observation of changing responsibility among Parliament, diplomacy, defence, policing, development, and public finance. It classifies observable documentary production, not presumed institutional intent.
 
-A human `reject` does not assert that a mention lacks historical interest. It
-means the publication does not cross this corpus's inclusion threshold. The
-decision is made at `document_id` level and propagates only to true official
-language versions.
+Document family is a broad category grouping records by the principal official domain or instrument through which Canadian security and intervention in Haiti are documented. It describes neither the document’s political position nor every subject it contains. A document may belong to more than one family when several domains are substantively represented.
 
-`review.csv` is authoritative for human decisions. One decision is recorded per
-logical document and propagated to every active official-language version.
-`corpus.csv` contains only versions belonging to retained documents, with
-`review_status = retain` on each version. Dashboard document totals count
-distinct `document_id` values.
+Families are selected for documentary observability, recurrence across documents or periods, longitudinal comparability, and relevance to how security and intervention were debated, authorized, financed, announced, implemented, or evaluated. The active codes in `config/families.csv` are:
 
-Publication dates and page-modification dates are distinct fields. An explicit
-official publication or release date is preferred and shared across authentic
-language counterparts. A modification date remains provenance metadata and is
-not promoted to a publication date when an evergreen page provides no such
-date.
+- `defence_policy`: white papers, defence policies, strategic statements, and implementation documents;
+- `parliament`: parliamentary debates, evidence, reports, motions, and related publications;
+- `development`: development and cooperation policies, programs, evaluations, and publications;
+- `armed_forces`: Canadian Armed Forces operations, missions, and military archives;
+- `rcmp`: RCMP publications and international-policing or police-mission records;
+- `statements`: ministerial speeches, statements, news releases, and official readouts;
+- `regional_strategy`: official strategies and frameworks concerning the Americas, the Caribbean, or another relevant regional configuration;
+- `sanctions`: sanctions regulations, announcements, reviews, and related measures;
+- `public_finance`: budgets, estimates, public accounts, and expenditure documents.
 
-```{r}
-#| echo: false
-review_data <- utils::read.csv("data/review.csv", stringsAsFactors = FALSE)
-corpus_data <- utils::read.csv("data/corpus.csv", stringsAsFactors = FALSE)
-cat(sprintf("The current reviewed corpus contains %d logical documents.",
-            length(unique(review_data$document_id))))
-```
+Families are not mutually exclusive.
+
+## Analytical concept coding
+
+The controlled bilingual vocabulary identifies explicit security-related concepts in retained official text. Configured regular expressions are matched within Haiti-related paragraphs or sections, stored relevance passages, or bounded contexts around references to Haiti or Haitians. Full stored text may be used only when a document’s title and structure establish that it is devoted to Haiti. A title, institution, family, or document type does not independently generate a concept proposal.
+
+Proposals are consolidated at `document_id + concept`, with English and French evidence preserved separately. Human review confirms or dismisses each proposal. Confirmed concepts are consolidated at the logical-document level, sorted deterministically, and propagated identically to every official-language version.
+
+Four states distinguish the outcome:
+
+- `confirmed`: at least one concept is confirmed;
+- `pending_review`: at least one proposal awaits review;
+- `reviewed_no_confirmed_concept`: proposals or previous assignments were reviewed, but all were dismissed;
+- `no_configured_match`: contextual matching produced no proposal.
+
+The completed corpus contains 150 logical documents: 91 `confirmed`, none `pending_review`, 30 `reviewed_no_confirmed_concept`, and 29 `no_configured_match`. It contains 184 confirmed document–concept relationships. The document table and heatmap use confirmed concepts only; pending documents are not treated as documents with zero concepts.
+
+Documents without a confirmed concept remain because substantive inclusion is determined independently from concept coding. A relevant publication may document operations, expenditures, institutions, or intervention without using the selected vocabulary. Removing such documents would select the corpus according to the concepts being measured, and the absence of a confirmed concept does not prove that the underlying idea is absent.
+
+## Spatial coding
+
+Spatial coding begins with bilingual lexical proposals in Haiti-related context. Occurrences are consolidated at `document_id + dimension + proposed_code`, with English and French evidence preserved separately. Human reviewers confirm or dismiss each proposal. Geographical mentions are rejected when they do not structure the documented action or relationship, including incidental place names, affiliations, administrative boilerplate, or references to an unrelated country.
+
+The completed spatial review contains 156 confirmed and 62 dismissed proposals, with none pending.
+
+The spatial-configuration constellation uses confirmed coding only and counts each logical `document_id` once for a given period and code. It is a schematic, non-geographical view: connection strength represents distinct supporting documents, while position and distance do not represent geographic location or causal importance.
+
+## Engagement coding and dashboard visualizations
+
+The dashboard organizes its analytical views into four lenses: engagements, spatial configurations, discourses and concepts, and institutions and instruments. These lenses reorganize the same reviewed corpus and do not change document inclusion or analytical classifications.
+
+The engagement board is a curated analytical layer over the retained corpus. `engagements.csv` identifies documented Canadian actions, `engagement_documents.csv` links supporting retained documents, and `engagement_instruments.csv` records observable instruments. A `document_id` identifies a publication; an `engagement_id` identifies an action. A publication becomes engagement evidence only when it documents that action explicitly.
+
+The board uses six layers: military operations, police activity, development and institutional support, diplomatic and multilateral action, sanctions and regulation, and financial or humanitarian assistance. One engagement may appear in several layers when several instruments are documented. Points represent engagements rather than documents, and their density is not a measure of intervention intensity.
+
+The layers show the sedimentation, coexistence, and modular combination of documented instruments. Their vertical order implies neither hierarchy nor causal dependence.
+
+Other dashboard views count distinct logical documents and use reviewed document-level institutions, families, dates, languages, and confirmed concepts. Percentages describe the retained corpus rather than external levels of governmental activity.
+
+## Reproducibility, audit trail, and development environment
+
+Configuration files define the case, temporal scope, official sources, document families, and controlled vocabularies. Separate tables preserve candidates, document-review decisions, the retained corpus, concept decisions, spatial decisions, engagement coding, retrieval diagnostics, and validation changes. Stable identities and append-only audit records make reviewed additions, removals, metadata changes, and coding propagation traceable.
+
+The principal public data files are:
+
+- `data/candidates.csv`: content-validated candidate versions;
+- `data/review.csv`: authoritative logical-document decisions;
+- `data/corpus.csv`: retained official-language versions;
+- `data/concept_decisions.csv`: authoritative concept decisions and evidence;
+- `data/spatial_review_queue.csv`: consolidated spatial decisions and evidence;
+- `data/concepts.csv`: the publishable analytical vocabulary;
+- `data/retrieval_diagnostics.csv`: retrieval and validation outcomes;
+- `data/validation_changes.csv`: the reconciliation and validation audit trail.
+
+The project is developed in R using the Positron IDE, with OpenAI Codex assisting programming, testing, and documentation. Human researchers remain responsible for corpus review, analytical coding, and methodological choices.

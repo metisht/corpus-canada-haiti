@@ -18,8 +18,20 @@ remember_discovery_source <- function(document_url, source_page) {
   invisible(document_url)
 }
 
+verified_parliament_report_viewer <- function(document_url) {
+  verified <- c(
+    "https://www.ourcommons.ca/content/Committee/451/FAAE/Reports/RP13790973/451_FAAE_Rpt4_PDF/451_FAAE_Rpt4-e.pdf" =
+      "https://www.ourcommons.ca/DocumentViewer/en/45-1/FAAE/report-4",
+    "https://www.ourcommons.ca/content/Committee/451/FAAE/Reports/RP13790973/451_FAAE_Rpt4_PDF/451_FAAE_Rpt4-f.pdf" =
+      "https://www.noscommunes.ca/documentviewer/fr/45-1/FAAE/rapport-4"
+  )
+  match <- verified[[canonicalize_url(document_url)]]
+  match %||% character()
+}
+
 discovered_source_page <- function(document_url, fallback) {
-  .discovery_source_pages[[canonicalize_url(document_url)]] %||% fallback
+  .discovery_source_pages[[canonicalize_url(document_url)]] %||%
+    verified_parliament_report_viewer(document_url) %||% fallback
 }
 
 remember_discovered_counterparts <- function(a, b) {
@@ -273,8 +285,93 @@ discover_ckan <- function(source, cfg, force = FALSE) {
   unique(canonicalize_url(urls[!is.na(urls) & grepl("^https?://", urls)]))
 }
 
+defence_policy_page_links <- function(doc, page) {
+  nodes <- rvest::html_elements(doc, "a[href], link[rel='alternate'][href]")
+  href <- xml2::url_absolute(rvest::html_attr(nodes, "href"), page)
+  label <- clean_space(rvest::html_text2(nodes))
+  hreflang <- rvest::html_attr(nodes, "hreflang")
+  hreflang[is.na(hreflang)] <- ""
+  official <- !is.na(href) & grepl(
+    "^https://(www\\.canada\\.ca|publications\\.gc\\.ca)/", href,
+    ignore.case = TRUE
+  )
+  pdf <- unique(canonicalize_url(href[
+    official &
+      grepl("\\.pdf($|[?#])", href, ignore.case = TRUE) &
+      grepl("PDF|Portable Document Format", label, ignore.case = TRUE)
+  ]))
+  counterpart <- unique(canonicalize_url(href[
+    official &
+      grepl("^(en|fr|eng|fra)$", hreflang, ignore.case = TRUE) &
+      canonicalize_url(href) != canonicalize_url(page)
+  ]))
+  list(pdf = pdf, counterpart = counterpart)
+}
+
+discover_defence_policy_index <- function(source, cfg, force = FALSE) {
+  pages <- trimws(strsplit(source$start_url, "\\|")[[1]])
+  visited <- character()
+  resolved <- list()
+
+  while (length(pages)) {
+    page <- pages[1]
+    pages <- pages[-1]
+    if (canonicalize_url(page) %in% visited) next
+    visited <- c(visited, canonicalize_url(page))
+    fetched <- polite_get(page, cfg, force)
+    links <- defence_policy_page_links(rvest::read_html(fetched$path), page)
+    links$pdf <- links$pdf[
+      !grepl("D3-6-(1964|1971)-", links$pdf, ignore.case = TRUE)
+    ]
+    page_language <- if (grepl("/(fr|fra)/", page, ignore.case = TRUE)) "fr" else "en"
+    for (document_url in links$pdf) {
+      document_language <- if (grepl("(-fra|F)\\.pdf$", document_url)) {
+        "fr"
+      } else if (grepl("(-eng|E)\\.pdf$", document_url)) {
+        "en"
+      } else {
+        page_language
+      }
+      existing_source <- .discovery_source_pages[[canonicalize_url(document_url)]]
+      if (identical(document_language, page_language) ||
+          is.null(existing_source))
+        remember_discovery_source(document_url, page)
+      remember_discovery_language(document_url, document_language)
+      resolved[[length(resolved) + 1L]] <- list(
+        url = document_url,
+        language = document_language
+      )
+    }
+    pages <- unique(c(pages, links$counterpart))
+  }
+
+  if (length(resolved)) {
+    keys <- vapply(resolved, function(x) defence_policy_document_key(x$url),
+                   character(1))
+    for (key in unique(keys)) {
+      matches <- resolved[keys == key]
+      english <- vapply(matches, function(x) if (x$language == "en") x$url else "",
+                        character(1))
+      french <- vapply(matches, function(x) if (x$language == "fr") x$url else "",
+                       character(1))
+      english <- english[nzchar(english)]
+      french <- french[nzchar(french)]
+      if (length(english) && length(french))
+        remember_discovered_counterparts(english[1], french[1])
+    }
+  }
+
+  head(unique(vapply(resolved, `[[`, character(1), "url")),
+       as.integer(cfg$max_discovered_per_source))
+}
+
 discover_publications_catalogue <- function(source, cfg, force = FALSE) {
   searches <- trimws(strsplit(source$start_url, "\\|")[[1]])
+  direct_documents <- searches[
+    !grepl("publications\\.gc\\.ca/.*/?search(?:/|\\?|$)", searches,
+           ignore.case = TRUE, perl = TRUE)
+  ]
+  searches <- setdiff(searches, direct_documents)
   records <- character()
   for (start in searches) {
     pages <- start; seen <- character(); p <- 1L
@@ -294,7 +391,10 @@ discover_publications_catalogue <- function(source, cfg, force = FALSE) {
       pages <- unique(c(pages, next_links[grepl("publications\\.gc\\.ca", next_links, ignore.case=TRUE)]))
     }
   }
-  documents <- character()
+  # Curated official document endpoints supplement catalogue search where the
+  # catalogue omits records or exposes dates only in record metadata. They
+  # still pass the normal retrieval, date, family, and substantive-Haiti gates.
+  documents <- direct_documents
   record_limit <- min(length(records), as.integer(cfg$max_discovered_per_source))
   for (record in head(records, record_limit)) {
     links <- tryCatch({
@@ -465,6 +565,7 @@ discover_source <- function(source, cfg, force = FALSE) {
     historical_parliament = discover_historical_parliament(source, cfg, force),
     ckan_api = discover_ckan(source, cfg, force),
     publications_catalogue = discover_publications_catalogue(source, cfg, force),
+    defence_policy_index = discover_defence_policy_index(source, cfg, force),
     seed_list = strsplit(source$start_url, "\\|")[[1]],
     stop("Unknown discovery method: ", source$method))
   if (source$source_id == "parliament" && source$method != "parliament_collection") urls <- unique(c(urls, vapply(urls, parliament_counterpart_url, character(1))))

@@ -2,6 +2,7 @@
 .RData
 .Rproj.user/
 .vscode/
+.venv/
 R/Downloads/
 _site/
 .quarto/
@@ -20,6 +21,23 @@ data/raw/*
 # Reconciliation backups are local recovery artifacts, not publishable data.
 data/backups/
 data/*_backup_*.csv
+# Local one-off reconciliation and review artifacts are not publishable inputs.
+data/pending_review_inventory.csv
+scripts/restore_reconciliation_diagnostics.R
+# Completed concept-review grouping artifacts are local audit aids. The
+# authoritative inputs are concept_review_queue.csv,
+# concept_existing_assignment_audit.csv, and concept_decisions.csv.
+data/concept_grouped_review.csv
+data/concept_individual_review.csv
+data/concept_pending_review.csv
+data/concept_remaining_grouped_review.csv
+data/concept_remaining_individual_review.csv
+data/concept_existing_unsupported_grouped_review.csv
+data/concept_existing_unsupported_individual_review.csv
+scripts/build_concept_pending_review.R
+scripts/build_concept_remaining_review.R
+scripts/build_concept_existing_unsupported_review.R
+CONCEPT_CODING_STATES.md
 *.tmp
 *.log
 .env

@@ -5,84 +5,104 @@ title-prefix: ""
 lang: fr
 ---
 
-## Portée et critères d’inclusion
+## Objet et portée du corpus
 
-Le corpus couvre les documents officiels canadiens qui portent substantiellement sur Haïti de 1991 à 2026. Le repérage s’effectue uniquement dans les listes, archives, systèmes de recherche et interfaces de programmation officiels configurés. Chaque document repéré est ouvert, puis son texte HTML ou PDF extrait est évalué. La présence d’un terme désignant le cas étudié en fait un document candidat; les concepts analytiques sont codés par la suite et ne sont jamais exigés pour l’inclusion.
+Un corpus longitudinal qui examine comment les institutions officielles canadiennes ont représenté Haïti et cadré la sécurité et l’intervention canadiennes dans le pays de 1991 à 2026. Il réunit des documents de politique publique, des publications parlementaires, des documents militaires et policiers, des déclarations diplomatiques, des publications sur le développement, des sanctions et des documents budgétaires afin de retracer l’évolution des récits et des pratiques de sécurité et d’intervention.
 
-Il ne s’agit pas d’une archive exhaustive de tous les documents canadiens qui mentionnent Haïti. Les documents sont inclus lorsque leur contenu porte substantiellement sur Haïti, sur la politique canadienne envers Haïti ou sur l’engagement du Canada dans le pays. Les concepts analytiques servent au codage et à l’analyse du corpus; ils ne constituent pas des critères d’inclusion obligatoires.
+L’unité documentaire est la publication officielle ou la séance parlementaire, et non une page numérisée isolée. L’inclusion n’exige aucun concept analytique. Un document entre dans le corpus lorsque son contenu substantiel développe une politique ou une action canadienne, une opération ou une mission, une aide, une sanction, une activité diplomatique, un témoignage, une recommandation ou une évaluation officielle significative concernant Haïti. Le corpus porte donc sur la sécurité et l’intervention plutôt que sur l’ensemble des relations Canada–Haïti.
 
-## Démarche reproductible
+## Sources officielles, repérage et récupération
 
-1. `config/case.yml` définit le cas, ses appellations, les dates et les limites de requêtes respectueuses.
-2. `config/sources.csv`, `families.csv` et `terms.csv` définissent le repérage, les familles à étiquettes multiples et les concepts modifiables.
-3. `Rscript run.R` effectue la validation en ligne limitée, met les téléchargements en cache localement et consigne les échecs sans interrompre les autres sources.
-4. Les nouveaux documents logiques entrent dans `data/review.csv` avec l’état `pending`. Les chercheurs remplacent la valeur de `decision` par `retain` ou `reject` et peuvent ajouter des notes; les exécutions ultérieures conservent ces lignes. Les documents rejetés quittent la file active seulement après la conservation de leur provenance, de leurs versions touchées, du réviseur, de l’horodatage et du motif dans les diagnostics et l’historique de validation.
-5. Chaque texte officiel français ou anglais conserve sa langue, son titre, son URL et son contenu extrait. Les liens officiels vers l’autre langue et les identifiants équivalents de la Gazette relient les textes bilingues comme un seul document; la similarité des titres n’est jamais utilisée. Les lois codifiées du ministère de la Justice demeurent distinctes de leur publication initiale dans la Gazette.
-6. Le collecteur écrit séparément les documents candidats, les documents retenus, le vocabulaire et les diagnostics. Les URL canoniques éliminent les doublons tout en préservant plusieurs étiquettes de famille.
+Le repérage est limité aux listes, archives, catalogues, systèmes de recherche et interfaces de programmation officiels canadiens configurés. Les résultats de recherche et les notices de catalogue servent de pistes plutôt que de documents du corpus : le document officiel doit être récupéré, appartenir à la période étudiée et satisfaire au critère de contenu substantiel sur Haïti. Le texte HTML ou PDF est extrait localement, tandis que les résultats et les échecs de récupération demeurent consignés dans les diagnostics. Les URL directes, pages de repérage, URL composantes, formats et métadonnées de récupération sont conservés pour établir la provenance.
 
-Les dates de publication, les dates de modification des pages et les dates d’opération ou d’événement sont conservées séparément. L’`year` analytique utilise le début d’un événement pour les fiches d’opération, sinon la date de publication; elle n’utilise l’année de modification d’une page que lorsque la date de publication est indisponible, et `date_source` consigne ce choix. Les dates qui ne peuvent être établies demeurent `uncertain` aux fins d’examen manuel. L’URL officielle directe et la page ou l’interface de repérage propre à chaque document sont conservées pour assurer la traçabilité.
+La `source` désigne le connecteur ou la collection officielle par lesquels le document a été découvert. Elle peut différer de l’institution qui a produit le document. Le `document_type` désigne sa forme administrative ou éditoriale précise et se situe à un niveau plus détaillé que la famille documentaire. Source, institution, famille et type de document sont donc des variables distinctes.
 
-Les débats de la Chambre sont repérés dans les index officiels des sessions et par les liens localisés du visualiseur. L’identité stable repose sur la législature, la session, le type de publication et le numéro de séance ou de rapport. Le visualiseur est `source_page`; son PDF localisé direct est `document_url`. L’en-tête officiel fournit la date, commune aux deux langues officielles. Les documents Canadiana antérieurs à 1994 utilisent les clés officielles de volume et de séquence pour le regroupement bilingue. Les en-têtes courants fournissent titres et dates; les index reçoivent un titre explicite.
+Les dates de publication, les dates de modification des pages et les dates d’opération ou d’événement sont conservées séparément. L’année analytique correspond au début de l’opération pour les documents opérationnels et, dans les autres cas, à la date de publication officielle; une date incertaine demeure explicitement incertaine plutôt que d’être déduite de métadonnées sans rapport direct.
 
-L’inclusion des opérations de la Défense utilise les dates de l’opération canadienne, jamais la date de modification de la page. Le nom de l’opération canadienne et celui de la mission internationale associée sont conservés séparément. Les notices historiques de diplomatie, développement, sanctions et police ne servent qu’au repérage; le document officiel téléchargé doit satisfaire aux critères de période, de contenu substantiel sur Haïti et de famille. Le plafond de validation s’applique séparément à chaque source et chaque exécution possède ses propres diagnostics. Les dénombrements variables sont calculés au rendu.
+## Identité documentaire et versions en langues officielles
 
-Le repérage des sanctions distingue trois fonctions documentaires. Les pages de politique nationale, les annonces, les documents d’autorisation et les examens réglementaires d’Affaires mondiales Canada constituent des documents de politique d’AMC. Les règlements, modifications et décrets publiés initialement dans la Gazette du Canada constituent des documents de la Gazette. Les règlements codifiés du site des lois du ministère de la Justice sont des consolidations juridiques distinctes. Les liens officiels relient ces documents, mais ces couches ne sont pas automatiquement dédoublonnées. Le repérage actuel des sanctions d’AMC concernant Haïti est validé séparément pour 2022–2026; le connecteur historique de 1991–1998 ne valide présentement aucun document candidat.
+Les valeurs stables de `document_id` identifient les documents logiques. Les versions officielles anglaise et française ne partagent une identité que lorsque des liens, des identifiants de publication ou une structure archivistique faisant autorité établissent leur relation; la seule ressemblance des titres ne suffit pas. Chaque version conserve son `version_id`, sa langue, son titre, son URL et son texte extrait. Une publication réellement bilingue peut demeurer une seule version bilingue lorsque le document officiel ne permet pas une séparation fiable.
 
-## Unité documentaire et classification avant révision
+L’identité des publications parlementaires historiques repose sur le parlement, la session, le type de publication et le numéro de séance ou de rapport. Les composantes archivistiques page par page d’une même publication partagent une identité logique, tandis que leurs URL demeurent une provenance explicite. Les lois consolidées restent distinctes des règlements et modifications initialement publiés dans la *Gazette du Canada*.
 
-L’unité documentaire est la publication ou la séance officielle, non la page
-numérisée. Les pages pertinentes d’une même publication historique partagent un
-`document_id` stable; `component_urls` et les repères de page préservent chaque
-URL officielle et la provenance du texte combiné. Aucune URL de PDF n’est
-déduite. Si aucun fichier officiel ne couvre toute la publication, une page
-officielle sert d’URL principale reproductible et les autres restent des
-composantes explicites. Une publication dans les deux langues demeure une seule
-version bilingue; des versions distinctes ne sont créées que si l’éditeur
-officiel les publie séparément.
+## Inclusion, exclusion et révision humaine
 
-Le contenu substantiel développe une politique ou action canadienne, une
-opération ou mission, l’aide, les sanctions ou la diplomatie, une question et
-réponse, un témoignage, une recommandation ou une évaluation factuelle
-significative d’Haïti. Les index, instruments de recherche, sommaires, pages de
-navigation, annonces de discussion ultérieure, adoptions formelles d’un rapport
-déjà conservé, corrections éditoriales, mentions à l’ordre du jour et
-comparaisons incidentes n’entrent pas dans la file active. Ils restent dans les
-diagnostics comme `non_document` ou `excluded`, avec leur URL et leur règle, et
-ne sont pas des échecs.
+Les nouveaux documents logiques entrent dans une table de révision durable. Les réviseurs humains retiennent ou rejettent chaque document et peuvent inscrire des notes, leur identité et un horodatage. La décision s’applique au document logique et se propage uniquement à ses versions officielles vérifiées. Le corpus actif contient les versions des documents retenus; les documents rejetés ou exclus à l’étape diagnostique demeurent vérifiables à l’extérieur du corpus.
 
-Une décision humaine `reject` ne signifie pas que la mention est sans intérêt
-historique. Elle signifie que la publication ne franchit pas le seuil
-d’inclusion du corpus. La décision est prise au niveau du `document_id` et ne se
-propage qu’aux véritables versions linguistiques officielles.
+Les index, pages de navigation, tables des matières, corrections éditoriales, avis de discussion future, adoptions formelles d’un rapport déjà retenu et mentions incidentes ne satisfont pas au seuil d’inclusion substantielle. Leur exclusion ne signifie pas qu’ils sont dépourvus d’intérêt historique hors de ce corpus.
 
-`review.csv` constitue la source d’autorité des décisions humaines. Une seule
-décision est inscrite par document logique et propagée à chaque version
-linguistique officielle active. `corpus.csv` contient uniquement les versions
-des documents retenus, chacune avec `review_status = retain`. Le total de
-documents du tableau de bord compte les valeurs `document_id` distinctes.
+## Institutions, familles documentaires et types
 
-Les dates de publication et de modification de page sont des champs distincts.
-Une date officielle explicite de publication ou de diffusion est privilégiée et
-partagée entre les véritables contreparties linguistiques. Une date de
-modification demeure une métadonnée de provenance et ne devient pas une date de
-publication lorsqu’une page permanente n’en fournit aucune.
+L’institution désigne l’organisation publique officiellement responsable de la publication ou de la production d’un document. Elle est déterminée à partir de la page officielle, des métadonnées ou de l’en-tête du document, et non des organisations simplement mentionnées dans le texte.
 
-```{r}
-#| echo: false
-review_data <- utils::read.csv("../data/review.csv", stringsAsFactors = FALSE)
-corpus_data <- utils::read.csv("../data/corpus.csv", stringsAsFactors = FALSE)
-cat(sprintf("Le corpus révisé actuel contient %d documents logiques.",
-            length(unique(review_data$document_id))))
-```
+La classification institutionnelle identifie les lieux officiels où la sécurité et l’intervention concernant Haïti sont produites, débattues, autorisées, financées, mises en œuvre ou évaluées. Elle permet d’observer l’évolution des responsabilités entre le Parlement, la diplomatie, la défense, la police, le développement et les finances publiques. Elle classe une production documentaire observable, et non une intention institutionnelle présumée.
 
-## Fichiers de données
+La famille documentaire est une catégorie générale regroupant les documents selon le principal domaine ou instrument officiel par lequel la sécurité et l’intervention canadiennes en Haïti sont documentées. Elle ne décrit ni la position politique du document ni l’ensemble des sujets qu’il contient. Un document peut appartenir à plusieurs familles lorsque plusieurs domaines y sont représentés de manière substantielle.
 
-- `data/candidates.csv` : tous les documents candidats dont le contenu a été validé.
-- `data/review.csv` : décisions humaines et annotations durables.
-- `data/corpus.csv` : documents marqués `retain` ou `include`.
-- `data/concepts.csv` : vocabulaire analytique publiable.
-- `data/retrieval_diagnostics.csv` : résultats et échecs par source.
+Les familles sont retenues selon leur observabilité documentaire, leur récurrence entre les documents ou les périodes, leur comparabilité longitudinale et leur pertinence pour l’étude de la manière dont la sécurité et l’intervention ont été débattues, autorisées, financées, annoncées, mises en œuvre ou évaluées. Les codes actifs de `config/families.csv` sont :
 
-## Environnement de développement
+- `defence_policy` : livres blancs, politiques de défense, énoncés stratégiques et documents de mise en œuvre;
+- `parliament` : débats parlementaires, témoignages, rapports, motions et publications connexes;
+- `development` : politiques, programmes, évaluations et publications de développement et de coopération;
+- `armed_forces` : opérations, missions et archives des Forces armées canadiennes;
+- `rcmp` : publications de la GRC et documents sur les missions policières internationales;
+- `statements` : discours ministériels, déclarations, communiqués et comptes rendus officiels;
+- `regional_strategy` : stratégies et cadres officiels concernant les Amériques, les Caraïbes ou une autre configuration régionale pertinente;
+- `sanctions` : règlements, annonces, examens et mesures connexes en matière de sanctions;
+- `public_finance` : budgets, budgets des dépenses, comptes publics et documents de dépenses.
 
-Le crawler, le processus de révision et le site Quarto sont développés en R dans l’environnement Positron. OpenAI Codex est utilisé comme outil d’assistance à la programmation, au débogage, aux tests et à la documentation. Les décisions d’inclusion et d’exclusion du corpus demeurent des décisions de révision humaine. Codex n’admet aucun document de manière autonome dans le corpus révisé.
+Les familles ne sont pas mutuellement exclusives.
+
+## Codage des concepts analytiques
+
+Le vocabulaire contrôlé bilingue identifie des concepts explicites liés à la sécurité dans les textes officiels retenus. Les expressions régulières configurées sont recherchées dans les paragraphes ou sections concernant Haïti, les passages de pertinence conservés ou les contextes bornés autour de références à Haïti ou aux Haïtiens. Le texte intégral ne peut être utilisé que lorsque le titre et la structure établissent que le document est consacré à Haïti. Un titre, une institution, une famille ou un type de document ne produit pas à lui seul une proposition conceptuelle.
+
+Les propositions sont consolidées au niveau `document_id + concept`, et les preuves anglaises et françaises sont conservées séparément. La révision humaine confirme ou rejette chaque proposition. Les concepts confirmés sont ensuite consolidés au niveau du document logique, triés de manière déterministe et propagés de façon identique à toutes les versions en langues officielles.
+
+Quatre états distinguent le résultat :
+
+- `confirmed` : au moins un concept est confirmé;
+- `pending_review` : au moins une proposition attend une révision;
+- `reviewed_no_confirmed_concept` : les propositions ou attributions antérieures ont été révisées, mais toutes ont été rejetées;
+- `no_configured_match` : la correspondance contextuelle n’a produit aucune proposition.
+
+Le corpus achevé contient 150 documents logiques : 91 `confirmed`, aucun `pending_review`, 30 `reviewed_no_confirmed_concept` et 29 `no_configured_match`. Il comprend 184 relations document–concept confirmées. Le tableau documentaire et la carte thermique utilisent uniquement les concepts confirmés; les documents en attente ne sont pas traités comme des documents ayant zéro concept.
+
+Les documents sans concept confirmé demeurent dans le corpus parce que l’inclusion substantielle est déterminée indépendamment du codage conceptuel. Une publication pertinente peut documenter des opérations, des dépenses, des institutions ou une intervention sans employer le vocabulaire sélectionné. Retirer ces documents reviendrait à sélectionner le corpus en fonction des concepts mesurés, et l’absence d’un concept confirmé ne prouve pas que l’idée sous-jacente est absente.
+
+## Codage spatial
+
+Le codage spatial commence par des propositions lexicales bilingues situées dans un contexte concernant Haïti. Les occurrences sont consolidées au niveau `document_id + dimension + proposed_code`, et les preuves anglaises et françaises sont conservées séparément. Des réviseurs humains confirment ou rejettent chaque proposition. Les mentions géographiques sont rejetées lorsqu’elles ne structurent pas l’action ou la relation documentée, notamment les noms de lieux incidents, les affiliations, les formules administratives ou les références à un autre pays.
+
+La révision spatiale achevée contient 156 propositions confirmées et 62 rejetées, sans aucune proposition en attente.
+
+La constellation des configurations spatiales utilise uniquement les codages confirmés et compte chaque `document_id` logique une seule fois pour une période et un code donnés. Il s’agit d’une vue schématique et non géographique : la force des liens représente le nombre de documents distincts qui les étayent, tandis que la position et la distance ne représentent ni la localisation géographique ni l’importance causale.
+
+## Codage des engagements et visualisations
+
+Le tableau de bord organise ses vues analytiques en quatre perspectives : les engagements, les configurations spatiales, les discours et concepts, ainsi que les institutions et instruments. Ces perspectives réorganisent le même corpus révisé sans modifier l’inclusion documentaire ni les classifications analytiques.
+
+Le tableau des engagements constitue une couche analytique révisée au-dessus du corpus retenu. `engagements.csv` identifie les actions canadiennes documentées, `engagement_documents.csv` relie les documents retenus qui les étayent et `engagement_instruments.csv` consigne les instruments observables. Un `document_id` identifie une publication; un `engagement_id` identifie une action. Une publication ne devient une preuve d’engagement que lorsqu’elle documente explicitement cette action.
+
+Le tableau utilise six couches : opérations militaires, activité policière, développement et soutien institutionnel, action diplomatique et multilatérale, sanctions et réglementation, et assistance financière ou humanitaire. Un même engagement peut apparaître dans plusieurs couches lorsque plusieurs instruments sont documentés. Les points représentent des engagements plutôt que des documents, et leur densité ne mesure pas l’intensité de l’intervention.
+
+Les couches montrent la sédimentation, la coexistence et la combinaison modulaire des instruments documentés. Leur ordre vertical n’implique ni hiérarchie ni dépendance causale.
+
+Les autres vues du tableau de bord comptent des documents logiques distincts et utilisent les institutions, familles, dates, langues et concepts confirmés au niveau du document révisé. Les pourcentages décrivent le corpus retenu plutôt que des niveaux externes d’activité gouvernementale.
+
+## Reproductibilité, piste d’audit et environnement de développement
+
+Les fichiers de configuration définissent le cas, la période, les sources officielles, les familles documentaires et les vocabulaires contrôlés. Des tables distinctes conservent les candidats, les décisions documentaires, le corpus retenu, les décisions conceptuelles et spatiales, le codage des engagements, les diagnostics de récupération et les changements de validation. Les identités stables et les registres d’audit cumulatifs rendent vérifiables les ajouts, retraits, changements de métadonnées et propagations de codage révisés.
+
+Les principaux fichiers de données publics sont :
+
+- `data/candidates.csv` : versions candidates validées sur le contenu;
+- `data/review.csv` : décisions faisant autorité au niveau du document logique;
+- `data/corpus.csv` : versions retenues en langues officielles;
+- `data/concept_decisions.csv` : décisions conceptuelles faisant autorité et preuves associées;
+- `data/spatial_review_queue.csv` : décisions spatiales consolidées et preuves associées;
+- `data/concepts.csv` : vocabulaire analytique publiable;
+- `data/retrieval_diagnostics.csv` : résultats de récupération et de validation;
+- `data/validation_changes.csv` : piste d’audit de la réconciliation et de la validation.
+
+Le projet est développé en R dans l’environnement Positron, avec l’aide d’OpenAI Codex pour la programmation, les tests et la documentation. Les chercheurs demeurent responsables de la révision du corpus, du codage analytique et des choix méthodologiques.

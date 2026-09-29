@@ -2,7 +2,7 @@
 # Loaded by run.R after utility/discovery modules. run_crawl() owns project CSV
 # side effects; review decisions are authoritative per document_id and all versions.
 
-candidate_columns <- c("document_id","version_id","title","publication_date","page_last_modified","event_start_date","event_end_date","year","date_source","language","institution","families","document_type","operation_name","international_mission_name","source_page","document_url","official_alternate_urls","component_urls","format","relevance_excerpt","extracted_text","matched_case_terms","matched_concepts","retrieval_method","retrieved_at","review_status","review_notes","date_status","canonical_url","content_hash","source_id")
+candidate_columns <- c("document_id","version_id","title","publication_date","page_last_modified","event_start_date","event_end_date","year","date_source","language","institution","families","document_type","operation_name","international_mission_name","source_page","document_url","official_alternate_urls","component_urls","format","relevance_excerpt","extracted_text","matched_case_terms","matched_concepts","concept_coding_state","retrieval_method","retrieved_at","review_status","review_notes","date_status","canonical_url","content_hash","source_id")
 review_columns <- c("document_id","version_id","decision","notes","reviewer","reviewed_at")
 diagnostic_columns <- c("run_id","source_id","family","url","stage","status","message","http_status","occurred_at")
 validation_cap_scope <- "per_source"
@@ -42,6 +42,23 @@ substantive_haiti <- function(text, url = "") {
     if (procedural_only) return(FALSE)
   }
   count >= 2L || grepl("haiti|haïti", substr(text, 1, 2500), ignore.case = TRUE)
+}
+
+substantive_defence_policy_haiti <- function(text) {
+  locations <- gregexpr("(?i)\\b(ha[iï]ti|haitian|haïtien(?:ne)?)\\w*",
+                        text, perl = TRUE)[[1]]
+  if (locations[1] == -1L) return(FALSE)
+  contexts <- vapply(
+    locations,
+    function(position) substr(text, max(1L, position - 500L), position + 700L),
+    character(1)
+  )
+  any(
+    grepl("Canadian Forces|Forces canadiennes|Canada|Canadian|canadien",
+          contexts, ignore.case = TRUE) &
+      grepl("operation|opération|sanction|embargo|deploy|déploi|mission|military|militaire|peace|paix|security|sécurité|humanitarian|humanitaire|evacuat|évacuat",
+            contexts, ignore.case = TRUE)
+  )
 }
 
 pre_review_classification <- function(title, text, url = "") {
@@ -97,12 +114,51 @@ pre_review_classification <- function(title, text, url = "") {
   list(include = TRUE, status = "completed", rule = "substantive_passage", reason = "")
 }
 
+source_document_id <- function(url, source_id, document_type = "",
+                               alternate_urls = character()) {
+  if (source_id == "parliament")
+    return(stable_parliament_document_id(url, document_type))
+  if (source_id == "rcmp_publications" &&
+      grepl("2024-25-cpa-ipp-annual-report", url, ignore.case = TRUE))
+    return(paste0("doc_", substr(digest::digest(
+      "rcmp:cpa-ipp:annual-report:2024-25", "sha256"), 1, 16)))
+  if (source_id == "rcmp_publications" &&
+      grepl("2023-2029-(implementation-plans-rcmp|plans-mise-ceuvre-grc)",
+            url, ignore.case = TRUE))
+    return(paste0("doc_", substr(digest::digest(
+      "rcmp:wps:implementation-plan:2023-2029", "sha256"), 1, 16)))
+  if (source_id == "defence_policy_index")
+    return(paste0("doc_", substr(digest::digest(
+      defence_policy_document_key(url), "sha256"), 1, 16)))
+  stable_document_id(url, alternate_urls)
+}
+
 process_url <- function(url, source, cfg, terms, families, force = FALSE) {
   fetched <- polite_get(url, cfg, force)
   content <- extract_content(fetched$path, fetched$type, url)
+  if (source$source_id == "defence_policy_index" &&
+      nchar(content$text) < 100L) {
+    scan_language <- discovered_language(url)
+    scanned_excerpt <- defence_policy_scanned_excerpt(url, scan_language)
+    if (nzchar(scanned_excerpt)) content$text <- scanned_excerpt
+  }
+  if (source$source_id == "defence_policy_index" &&
+      grepl("\\.pdf($|[?#])", url, ignore.case = TRUE) &&
+      grepl("Information Archived on the Web|Information archivée dans le Web",
+            paste(content$title, content$text), ignore.case = TRUE))
+    crawler_stop(
+      "failed",
+      "Official catalogue PDF route returned an archival interstitial instead of document bytes"
+    )
   if (!nzchar(content$title) || nchar(content$text) < 100) crawler_stop("non_document", "Page has no substantive document text")
   hits <- case_matches(paste(content$title, content$text), unlist(cfg$case_labels))
-  if (!length(hits) || !substantive_haiti(content$text, url)) crawler_stop("excluded", "Retrieved successfully but Haiti is not substantive")
+  substantive <- if (source$source_id == "defence_policy_index") {
+    substantive_defence_policy_haiti(content$text)
+  } else {
+    substantive_haiti(content$text, url)
+  }
+  if (!length(hits) || !substantive)
+    crawler_stop("excluded", "Retrieved successfully but Haiti is not substantive")
   dates <- extract_date_metadata(content$text, url, source$source_id)
   year <- dates$year
   date_status <- if (is.na(year)) "uncertain" else if (year >= cfg$start_year && year <= cfg$end_year) "in_range" else "out_of_range"
@@ -110,9 +166,27 @@ process_url <- function(url, source, cfg, terms, families, force = FALSE) {
   hash <- digest::digest(content$text, algo = "sha256", serialize = FALSE)
   lang <- discovered_language(url)
   if (!length(lang)) lang <- language_of(content$text)
+  if (source$source_id == "defence_policy_index") {
+    official_title <- defence_policy_title(url, lang)
+    if (nzchar(official_title)) content$title <- official_title
+    routed <- discovered_counterpart(url)
+    if (length(routed) &&
+        !identical(canonicalize_url(routed), canonicalize_url(url)))
+      content$alternate_urls <- unique(c(content$alternate_urls, routed))
+  }
   if (source$source_id %in% c("parliament", "historical_parliament")) {
     pm <- parliament_metadata(content$title, content$text, url, lang)
     content$title <- pm$title
+    if (source$source_id == "parliament" && pm$document_type == "committee_report" &&
+        !is.na(pm$report_month)) {
+      report_date <- parse_month_year(pm$report_month)
+      if (!is.na(report_date)) {
+        dates$publication_date <- report_date
+        dates$year <- as.integer(substr(report_date, 1, 4))
+        dates$date_source <- "authoritative committee-report cover month"
+        year <- dates$year
+      }
+    }
     routed <- discovered_counterpart(url)
     house_pdf <- grepl("/Content/(Committee|House)/.*\\.pdf($|[?#])", url, ignore.case=TRUE)
     if (length(routed) && !identical(canonicalize_url(routed), canonicalize_url(url))) content$alternate_urls <- unique(c(content$alternate_urls, routed))
@@ -154,11 +228,18 @@ process_url <- function(url, source, cfg, terms, families, force = FALSE) {
     version_id <- stable_historical_version_id(document_id, "bilingual")
     lang <- "bilingual"
   } else {
-    document_id <- if (source$source_id == "parliament")
-      stable_parliament_document_id(url, meta$document_type) else
-      stable_document_id(url, content$alternate_urls)
+    document_id <- source_document_id(url, source$source_id,
+                                      meta$document_type,
+                                      content$alternate_urls)
     version_id <- stable_version_id(url, lang)
   }
+  concept_matches <- code_terms(
+    content$text,
+    terms,
+    relevance_text = relevance_excerpt(content$text, hits, cfg$excerpt_characters),
+    title = content$title,
+    document_type = meta$document_type
+  )
   data.frame(document_id = document_id, version_id = version_id, title = content$title,
     publication_date = dates$publication_date, page_last_modified = dates$page_last_modified, event_start_date = dates$event_start_date, event_end_date = dates$event_end_date,
     year = year, date_source = dates$date_source, language = lang, institution = meta$institution,
@@ -166,7 +247,9 @@ process_url <- function(url, source, cfg, terms, families, force = FALSE) {
     operation_name = operation_name, international_mission_name = international_mission_name,
     source_page = discovered_source_page(url, if (source$method == "seed_list") url else source$start_url), document_url = url,
     official_alternate_urls = paste(content$alternate_urls, collapse = "|"), component_urls = if (source$source_id == "historical_parliament") url else "", format = content$format, relevance_excerpt = relevance_excerpt(content$text, hits, cfg$excerpt_characters), extracted_text = content$text,
-    matched_case_terms = paste(hits, collapse = "|"), matched_concepts = code_terms(content$text, terms),
+    matched_case_terms = paste(hits, collapse = "|"),
+    matched_concepts = concept_matches,
+    concept_coding_state = if (nzchar(concept_matches)) "pending_review" else "no_configured_match",
     retrieval_method = source$method, retrieved_at = now_utc(), review_status = "pending", review_notes = "",
     date_status = date_status, canonical_url = canonicalize_url(url), content_hash = hash,
     source_id = source$source_id, stringsAsFactors = FALSE)

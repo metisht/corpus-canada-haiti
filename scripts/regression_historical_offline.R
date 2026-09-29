@@ -78,6 +78,30 @@ source <- data.frame(start_url=search1, allowed_domain="publications.gc.ca", str
 docs <- discover_publications_catalogue(source, list(max_discovered_per_source=10L))
 check("correct paginated historical catalogue routes",
       setequal(docs, c("https://publications.gc.ca/collections/one.pdf", "https://publications.gc.ca/collections/two.pdf")))
+direct <- "https://publications.gc.ca/collections/collection_2010/acdi-cida/example.pdf"
+source$start_url <- paste(search1, direct, sep="|")
+docs <- discover_publications_catalogue(source, list(max_discovered_per_source=10L))
+check("verified direct official documents supplement catalogue discovery",
+      direct %in% docs && !any(grepl("publication\\.html$", docs)))
+rcmp_en <- "https://open.canada.ca/data/dataset/x/resource/a/download/en-web-version-2024-25-cpa-ipp-annual-report.pdf"
+rcmp_fr <- "https://open.canada.ca/data/dataset/x/resource/b/download/fr-web-version-2024-25-cpa-ipp-annual-report.pdf"
+check("RCMP annual-report language versions share document identity",
+      identical(source_document_id(rcmp_en, "rcmp_publications"),
+                source_document_id(rcmp_fr, "rcmp_publications")))
+
+archive_dates <- extract_date_metadata(
+  "Archived ministerial statement without a machine-readable publication day",
+  "https://www.canada.ca/en/news/archive/2010/07/statement-minister-cannon-haiti.html",
+  "gac_news")
+check("archived statements use the authoritative archive year",
+      archive_dates$year == 2010L &&
+        grepl("exact publication day unavailable", archive_dates$date_source))
+check("observable administrative document types",
+      observable_document_type("Canadian Police Arrangement Annual Report 2024-2025") == "annual_report" &&
+      observable_document_type("RCMP Implementation Plan 2023 to 2029") == "implementation_report" &&
+      observable_document_type("Evaluation of the International Police Program") == "program_evaluation" &&
+      observable_document_type("Supplementary Estimates (C) 2023-24") == "supplementary_estimates" &&
+      observable_document_type("Police training course in Haiti") == "training_record")
 check("historical catalogue family classification",
       catalogue_record_relevant("historical_diplomacy", "Haiti — Department of Foreign Affairs") &&
       !catalogue_record_relevant("historical_diplomacy", "Haiti — Royal Canadian Mounted Police") &&

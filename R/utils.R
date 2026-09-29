@@ -59,6 +59,53 @@ official_work_key <- function(url, alternate_urls = character()) {
 stable_document_id <- function(url, alternate_urls = character()) paste0("doc_", substr(digest::digest(official_work_key(url, alternate_urls), "sha256"), 1, 16))
 stable_version_id <- function(url, language) paste0("ver_", substr(digest::digest(paste(canonicalize_url(url), language, sep = "|"), "sha256"), 1, 16))
 
+defence_policy_document_key <- function(url) {
+  normalized <- tolower(canonicalize_url(url))
+  if (grepl("d3-6-1994-(eng|fra)", normalized))
+    return("defence_policy:white_paper:1994")
+  if (grepl("d2-168-2005[ef]", normalized))
+    return("defence_policy:international_policy_statement_defence:2005")
+  if (grepl("north-strong-free|nord-fort-libre", normalized))
+    return("defence_policy:our_north_strong_and_free:2024")
+  if (grepl("strong-secure-engaged|politique-defense-canada", normalized))
+    return("defence_policy:strong_secure_engaged:2017")
+  if (grepl("defence-plan-2018-2023|plan-de-la-defense-2018-2023", normalized))
+    return("defence_policy:defence_plan:2018-2023")
+  paste0("defence_policy:official_document:", normalized)
+}
+
+defence_policy_title <- function(url, language) {
+  key <- defence_policy_document_key(url)
+  if (key == "defence_policy:white_paper:1994")
+    return(if (language == "fr") "Livre blanc sur la défense de 1994" else
+      "1994 Defence White Paper")
+  if (key == "defence_policy:international_policy_statement_defence:2005") {
+    if (language == "fr")
+      return("Fierté et influence : notre rôle dans le monde — Défense")
+    return("A Role of Pride and Influence in the World — Defence")
+  }
+  if (key == "defence_policy:our_north_strong_and_free:2024") {
+    if (language == "fr") {
+      return("Notre Nord, fort et libre : Une vision renouvelée pour la défense du Canada")
+    }
+    return("Our North, Strong and Free: A Renewed Vision for Canada's Defence")
+  }
+  ""
+}
+
+defence_policy_scanned_excerpt <- function(url, language) {
+  if (language == "fr" &&
+      defence_policy_document_key(url) == "defence_policy:white_paper:1994") {
+    return(paste(
+      "Transcription vérifiée de la page imprimée 34 du document officiel :",
+      "Les Forces canadiennes ont pris part à des opérations de chacun de ces types.",
+      "Nos militaires ont contribué à faire respecter les sanctions économiques",
+      "décrétées contre Haïti et l’ex-Yougoslavie."
+    ))
+  }
+  ""
+}
+
 parliament_document_key <- function(url, document_type = "") {
   normalized <- canonicalize_url(url)
   modern <- regexec("/(?:en|fr)/(\\d+)-(\\d+)/(?:house|chambre)/(?:sitting|seance)-(\\d+)/(hansard|debats|journals|journaux)", normalized, ignore.case = TRUE, perl = TRUE)

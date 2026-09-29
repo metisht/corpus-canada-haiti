@@ -1,0 +1,35 @@
+dimension,code,language,pattern,match_type,notes
+spatial_scale,bilateral,en,\bbilateral(?:ly)?\b,regex,Requires Canada-Haiti actors and a relational action in local context
+spatial_scale,bilateral,fr,\bbilat[eé]ral(?:e|es|ement)?s?\b,regex,Exige les acteurs Canada-Haïti et une action relationnelle dans le contexte local
+spatial_scale,caribbean,en,\bCaribbean(?:\s+(?:region|community|countries|partners?|neighbou?rhood|security|basin))?\b,regex,Requires an action institution policy security issue or regional framework involving Haiti
+spatial_scale,caribbean,fr,\b(?:Cara[iï]bes|carib[eé]en(?:ne)?s?)\b,regex,Exige une action institution politique question de sécurité ou configuration régionale concernant Haïti
+spatial_scale,americas_hemisphere,en,\b(?:the\s+Americas|Western\s+Hemisphere|hemispheric)\b,regex,Explicit hemispheric scale
+spatial_scale,americas_hemisphere,fr,\b(?:les\s+Am[eé]riques|h[eé]misph[eé]re\s+occidental|h[eé]misph[eé]rique)\b,regex,Échelle hémisphérique explicite
+spatial_scale,north_american_continental,en,\b(?:North\s+America(?:n)?|continental\s+security)\b,regex,Explicit continental scale
+spatial_scale,north_american_continental,fr,\b(?:Am[eé]rique\s+du\s+Nord|nord-am[eé]ricain(?:e|es)?s?|s[eé]curit[eé]\s+continentale)\b,regex,Échelle continentale explicite
+spatial_scale,canada_domestic,en,\b(?:domestic\s+security|Canadian\s+border|security\s+of\s+Canada)\b,regex,Explicit Canadian domestic scale
+spatial_scale,canada_domestic,fr,\b(?:s[eé]curit[eé]\s+int[eé]rieure|fronti[eè]re\s+canadienne|s[eé]curit[eé]\s+du\s+Canada)\b,regex,Échelle intérieure canadienne explicite
+spatial_scale,global_multilateral,en,\b(?:multilateral(?:ism|ly)?|United\s+Nations\s+system)\b,regex,International community alone is excluded and generic multilateral wording requires an action or institution
+spatial_scale,global_multilateral,fr,\b(?:multilat[eé]ral(?:e|es|ement|isme)?s?|syst[eè]me\s+des\s+Nations\s+Unies)\b,regex,Communauté internationale seule exclue et formulation multilatérale générique soumise au contexte
+spatial_practice,border,en,\b(?:borders?|cross-border)\b,regex,Requires a movement control flow or security relation involving Haiti
+spatial_practice,border,fr,\b(?:fronti[eè]res?|transfrontalier(?:e|es)?s?)\b,regex,Exige un mouvement contrôle flux ou rapport de sécurité concernant Haïti
+spatial_practice,maritime,en,\b(?:maritime|naval\s+(?:operation|interception|blockade|patrol)s?)\b,regex,Explicit maritime practice
+spatial_practice,maritime,fr,\b(?:maritime|op[eé]ration(?:s)?\s+navale(?:s)?|interception(?:s)?\s+navale(?:s)?|blocus\s+naval|patrouille(?:s)?\s+navale(?:s)?)\b,regex,Pratique maritime explicite
+spatial_practice,migration_mobility,en,\b(?:migration|migrants?|migratory|human\s+mobility|refugees?|asylum|forced\s+displacement|evacuation)\b,regex,Requires an identified Haitian population route destination origin or movement
+spatial_practice,migration_mobility,fr,\b(?:migration|migrants?|migratoire(?:s)?|mobilit[eé]\s+humaine|r[eé]fugi[eé]s?|asile|d[eé]placement\s+forc[eé]|[eé]vacuation)\b,regex,Exige une population route destination origine ou mobilité haïtienne identifiée
+spatial_practice,transnational,en,\btransnational(?:\s+(?:flows?|crime|criminality|threats?|networks?|organizations?|issues?))?\b,regex,Explicit transnational practice with contextual validation
+spatial_practice,transnational,fr,\btransnational(?:e|es)?s?(?:\s+(?:flux|criminalit[eé]|menaces?|r[eé]seaux|organisations?|enjeux?))?\b,regex,Pratique transnationale explicite avec validation contextuelle
+spatial_practice,regional_security,en,\bregional\s+security\b,regex,Explicit regional-security formulation
+spatial_practice,regional_security,fr,\bs[eé]curit[eé]\s+r[eé]gionale\b,regex,Formulation explicite de sécurité régionale
+relational_framing,peripheral,en,\b(?:peripheral|periphery)\b,regex,Explicit peripheral positioning
+relational_framing,peripheral,fr,\b(?:p[eé]riph[eé]rique|p[eé]riph[eé]rie)\b,regex,Positionnement périphérique explicite
+relational_framing,priority_country,en,\bpriority\s+countr(?:y|ies)\b,regex,Explicit priority-country designation
+relational_framing,priority_country,fr,\bpays\s+prioritaire(?:s)?\b,regex,Désignation explicite de pays prioritaire
+relational_framing,special_relationship,en,\b(?:special|unique)\s+relationship\b,regex,Explicit special relationship
+relational_framing,special_relationship,fr,\brelation(?:s)?\s+(?:sp[eé]ciale(?:s)?|unique(?:s)?)\b,regex,Relation spéciale ou unique explicite
+relational_framing,neighbourhood,en,\b(?:our\s+)?neighbou?rhood\b,regex,Explicit relational neighbourhood wording
+relational_framing,neighbourhood,fr,\b(?:notre\s+)?voisinage\b,regex,Formulation relationnelle de voisinage
+relational_framing,regional_partner,en,\bregional\s+partners?\b,regex,Explicit regional-partner designation
+relational_framing,regional_partner,fr,\bpartenaires?\s+r[eé]gionaux?\b,regex,Désignation explicite de partenaire régional
+relational_framing,shared_security_space,en,\b(?:shared\s+security\s+space|common\s+security\s+space)\b,regex,Explicit shared-security-space wording
+relational_framing,shared_security_space,fr,\b(?:espace\s+de\s+s[eé]curit[eé]\s+partag[eé]|espace\s+commun\s+de\s+s[eé]curit[eé])\b,regex,Formulation explicite d’espace de sécurité partagé

@@ -1,9 +1,10 @@
 ---
 title: "Canada–Haiti: Official Discourse and Policy Corpus"
-subtitle: "A longitudinal corpus examining how Canadian official institutions have represented Haiti and framed Canadian engagement with the country from 1991 to 2026. It brings together policy documents, parliamentary records, military and police materials, diplomatic statements, development publications, sanctions, and budget documents to trace changing narratives of security, democracy, instability, migration, and intervention."
+subtitle: "A longitudinal corpus examining how Canadian official institutions have represented Haiti and framed Canadian security and intervention in the country from 1991 to 2026. It brings together policy documents, parliamentary records, military and police materials, diplomatic statements, development publications, sanctions, and budget documents to trace changing narratives and practices of security and intervention."
 page-layout: full
 toc: false
 lang: en
+body-classes: corpus-index
 ---
 
 ```{r}

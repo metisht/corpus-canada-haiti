@@ -1,138 +1,151 @@
-"document_id","version_id","decision","notes","reviewer","reviewed_at"
-"doc_01aa1f5775539743","ver_1ab58ad022ef8644","retain","","Patricia Camilien","2026-09-22T14:52:14Z"
-"doc_032b13e0734e67f2","ver_6f37b65563d67bd2","retain","Substantive parliamentary information concerning Canadian operations or personnel in Haiti.","Patricia Camilien","2026-09-26T04:28:09Z"
-"doc_03815c488dc4ac1c","ver_67aca387ca3fa422","retain","Substantive parliamentary intervention concerning Haiti.","Patricia Camilien","2026-09-26T04:21:34Z"
-"doc_05e31b838990b4f1","ver_625116bef9c551d9","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:16:07Z"
-"doc_0600194fddc50308","ver_9a2435fa0243f7d2","retain","Validated during manual review.","Patricia Camilien","2026-09-26T04:11:41Z"
-"doc_0db0645f10aa94b2","ver_9c77177f915d411f","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:16:07Z"
-"doc_0e281c49fe81bff5","ver_881ca8d9cfaa6ab3","retain","Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.","Patricia Camilien","2026-09-26T04:26:38Z"
-"doc_0f6bb964aa87dfd6","ver_56d242a374a1217d","retain","","Patricia Camilien","2026-09-22T14:52:14Z"
-"doc_0fb6f808b3f21c9e","ver_6995c39c842c0281","retain","","Patricia Camilien","2026-09-26T07:18:38Z"
-"doc_117e2d2488deb7ba","ver_d3e20d254ede718b","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:19:15Z"
-"doc_14acf4ec1d8c1ed0","ver_48760578250de19e","retain","Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.","Patricia Camilien","2026-09-26T04:26:38Z"
-"doc_194f5a629b87289c","ver_35e48ee7135c34b3","retain","Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.","Patricia Camilien","2026-09-26T04:26:38Z"
-"doc_19a800832566b15e","ver_c01e3b9198cb8f00","retain","Substantive parliamentary intervention concerning Haiti.","Patricia Camilien","2026-09-26T04:21:34Z"
-"doc_1a486b283d9be192","ver_33d2bdca014c166e","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:19:15Z"
-"doc_1d1eaafa5cce2a2d","ver_0200815d4c3ef1a2","retain","","Patricia Camilien","2026-09-22T08:36:21Z"
-"doc_1d78324c20e585d3","ver_40ec041ea57eed15","retain","Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.","Patricia Camilien","2026-09-26T04:26:38Z"
-"doc_20635e8af9638f0c","ver_d4761ddd0d29dc86","retain","","Patricia Camilien","2026-09-22T08:36:21Z"
-"doc_20cfb1018adb938f","ver_c59ddf8e54fb5268","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:19:15Z"
-"doc_22a65ab9fb583711","ver_c08ce462e7929598","retain","","Patricia Camilien","2026-09-26T07:18:38Z"
-"doc_23c7d440fbadae60","ver_987f45ccc774417e","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:16:07Z"
-"doc_2535ac242fc24e1b","ver_7025be511a77db9a","retain","Substantive official Global Affairs Canada document concerning Haiti.","Patricia Camilien","2026-09-26T04:51:22Z"
-"doc_2d57be6a22f9f43b","ver_c67f0d180789753f","retain","Substantive official Global Affairs Canada document concerning Haiti.","Patricia Camilien","2026-09-26T04:51:22Z"
-"doc_33463407c3bb7e6d","ver_05444657228501fd","retain","Substantive parliamentary discussion concerning Haiti.","Patricia Camilien","2026-09-26T04:13:53Z"
-"doc_33e8d977deaec6b4","ver_9db88e0e8bd97552","retain","Validated during manual review.","Patricia Camilien","2026-09-26T04:11:41Z"
-"doc_353caf05a1ef2035","ver_0b777450fe98608d","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:19:15Z"
-"doc_36f22a42bdeb158b","ver_52e1e0643fb9f6e5","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:16:07Z"
-"doc_37f1777035ca16f7","ver_bb707e49fb7aecee","retain","","Patricia Camilien","2026-09-22T08:36:21Z"
-"doc_3890012ff6a1282e","ver_898fffb2167392aa","retain","Substantive parliamentary intervention concerning Haiti.","Patricia Camilien","2026-09-26T04:21:34Z"
-"doc_3a07bdeadca396b4","ver_c5e76d53c78d44a6","retain","Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.","Patricia Camilien","2026-09-26T04:26:38Z"
-"doc_40864f7051423269","ver_bc73654f99b4193e","retain","Validated during manual review.","Patricia Camilien","2026-09-26T04:11:41Z"
-"doc_416062e105e58e2f","ver_925cc00885e6c177","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:19:15Z"
-"doc_446ed6e0029a3c15","ver_c3e4bbe96a9fce4f","retain","","Patricia Camilien","2026-09-22T08:36:21Z"
-"doc_454a36fc4430e64d","ver_08308d1e1fd195e4","retain","Substantive parliamentary intervention concerning Haiti.","Patricia Camilien","2026-09-26T04:21:34Z"
-"doc_472b62aa5d6660ea","ver_bc9f5c714fafcfb4","retain","","Patricia Camilien","2026-09-22T08:36:21Z"
-"doc_48fd1c27118304f8","ver_0cd85a12e42f4210","retain","Substantive parliamentary intervention concerning Haiti.","Patricia Camilien","2026-09-26T04:21:34Z"
-"doc_4caa7b7c4b8aa027","ver_d1ecbb62bf36be33","retain","Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.","Patricia Camilien","2026-09-26T04:26:38Z"
-"doc_4fb82be7d86a0a7d","ver_e758898c18f1c2a8","retain","Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.","Patricia Camilien","2026-09-26T04:26:38Z"
-"doc_4fcbea54a5a98aeb","ver_1bcb7f55212aacd0","retain","Substantive parliamentary intervention concerning Haiti.","Patricia Camilien","2026-09-26T04:21:34Z"
-"doc_500daf5c156c3b5b","ver_67bbc81b626565f5","retain","Substantive parliamentary information concerning Canadian operations or personnel in Haiti.","Patricia Camilien","2026-09-26T04:28:09Z"
-"doc_50799bd125c16c7d","ver_ce2cf4b446cfb861","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:19:15Z"
-"doc_50bc0e9662ed4a7f","ver_35043887d26de99b","retain","","Patricia Camilien","2026-09-22T08:36:21Z"
-"doc_5257b602e9842a20","ver_b0e8130836436eeb","retain","Substantive parliamentary evidence concerning Haiti.","Patricia Camilien","2026-09-26T04:18:15Z"
-"doc_53c8e53f372060e4","ver_775e1d52e6e6ac21","retain","Validated during manual review.","Patricia Camilien","2026-09-26T04:11:41Z"
-"doc_5663bc09ceea0dbd","ver_27451923c2dfadaa","retain","Substantive parliamentary intervention concerning Haiti.","Patricia Camilien","2026-09-26T04:21:34Z"
-"doc_572fe588a1e20575","ver_58ac5f81feddea4f","retain","","Patricia Camilien","2026-09-22T14:52:14Z"
-"doc_57ace9759bc4427a","ver_01b30025d5fe06ab","retain","Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.","Patricia Camilien","2026-09-26T04:26:38Z"
-"doc_58ba5bc817caf2f4","ver_2cf0c7ce805f79a1","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:16:07Z"
-"doc_5946db0cb49cc218","ver_7517d84d62e5dd2d","retain","Substantive parliamentary intervention concerning Haiti.","Patricia Camilien","2026-09-26T04:21:34Z"
-"doc_5a0026175b67d628","ver_5213f9abf3483f64","retain","","",""
-"doc_5e34174ad5474dde","ver_5fbc17e9fbc44c62","retain","","Patricia Camilien","2026-09-22T08:36:21Z"
-"doc_64c46e4015002689","ver_dd2d4aebdb1744fa","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:16:07Z"
-"doc_69d48fb2875b3537","ver_35e69fb89c7d23f8","retain","Substantive official Global Affairs Canada document concerning Haiti.","Patricia Camilien","2026-09-26T04:51:22Z"
-"doc_6be9585faccc4f7a","ver_dbd0d3b99f400115","retain","","Patricia Camilien","2026-09-22T08:36:21Z"
-"doc_6c20483be6a4fdae","ver_a78278390cc367a0","retain","Substantive official Global Affairs Canada document concerning Haiti.","Patricia Camilien","2026-09-26T04:51:22Z"
-"doc_71db829585470eb6","ver_57aa199bd49e527c","retain","Substantive parliamentary information concerning Canadian operations or personnel in Haiti.","Patricia Camilien","2026-09-26T04:28:09Z"
-"doc_72247a4860135343","ver_c1609619b955b8fd","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:19:15Z"
-"doc_7482c0e648fac8c5","ver_ad9b34ed7f2f075e","retain","","Patricia Camilien","2026-09-26T07:21:45Z"
-"doc_74d86079e84f4956","ver_e9299e20a731b9c8","retain","Validated during manual review.","Patricia Camilien","2026-09-26T04:11:41Z"
-"doc_777c05aa64428fd2","ver_a78cd1663d5afb4f","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:16:07Z"
-"doc_7b392dd1b1efec1a","ver_5d11d00fed934bcf","retain","Substantive parliamentary intervention concerning Haiti.","Patricia Camilien","2026-09-26T04:21:34Z"
-"doc_7ca740d5aef72797","ver_2b2e351f2c41ec06","retain","Retain; substantive Canada-Haiti relations page. Family classification requires correction.","Patricia Camilien","2026-09-26T04:51:22Z"
-"doc_81da15c402a885fd","ver_9760a557523af81b","retain","Substantive parliamentary discussion concerning Haiti.","Patricia Camilien","2026-09-26T04:13:53Z"
-"doc_83e9a22aa6a888b4","ver_59fe6300d4cd4c75","retain","Substantive official Global Affairs Canada document concerning Haiti.","Patricia Camilien","2026-09-26T04:51:22Z"
-"doc_844143046dfc23b3","ver_fe41ca03f0dd688a","retain","Substantive parliamentary information concerning Canadian operations or personnel in Haiti.","Patricia Camilien","2026-09-26T04:28:09Z"
-"doc_85b0dc117c1ac5bf","ver_9ae5df081e881544","retain","","",""
-"doc_89c03871212e57d1","ver_287246431bc7e43a","retain","Validated during manual review.","Patricia Camilien","2026-09-26T04:11:41Z"
-"doc_8beb617c16e0a8f8","ver_d0527561b4aa8697","retain","Substantive official Global Affairs Canada document concerning Haiti.","Patricia Camilien","2026-09-26T04:51:22Z"
-"doc_8d7d9dfa53226326","ver_6a89deaba891f4d3","retain","Substantive parliamentary evidence concerning Haiti.","Patricia Camilien","2026-09-26T04:18:15Z"
-"doc_927f0c33b0ec1e84","ver_b4b5a82d9fd001f6","retain","Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.","Patricia Camilien","2026-09-26T04:26:38Z"
-"doc_9383c9876e29ccab","ver_87275eb30b17660e","retain","Validated during manual review.","Patricia Camilien","2026-09-26T04:11:41Z"
-"doc_951a3585c8cc0883","ver_b1efa9d1c7cc1850","retain","Retain; substantive ministerial meeting on Haiti. Family classification requires correction.","Patricia Camilien","2026-09-26T04:51:22Z"
-"doc_96858fb16638e38f","ver_2f4705e59713ffd2","retain","Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.","Patricia Camilien","2026-09-26T04:26:38Z"
-"doc_97bcc507a52184aa","ver_f47294839545fb16","retain","","Patricia Camilien","2026-09-22T08:36:21Z"
-"doc_98ab02dc33b997a7","ver_b143d0957b3633b6","retain","Substantive official Global Affairs Canada document concerning Haiti.","Patricia Camilien","2026-09-26T04:51:22Z"
-"doc_9a7f7cf6121d615e","ver_96fcbdb62dd1723a","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:19:15Z"
-"doc_9b060de034f3e96b","ver_e3bd4e39b30bae7d","retain","Substantive parliamentary information concerning Canadian operations or personnel in Haiti.","Patricia Camilien","2026-09-26T04:28:09Z"
-"doc_9d8073d4ffe93717","ver_e2cb4dac047da92d","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:16:07Z"
-"doc_9ed93e8a637fe724","ver_238c308c4e3d7b6a","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:19:15Z"
-"doc_9f90d0f1778ef688","ver_fc60a0983ae2fd95","retain","Substantive parliamentary intervention concerning Haiti.","Patricia Camilien","2026-09-26T04:21:34Z"
-"doc_a3ea7a0fc18673ba","ver_602f343a2f971e99","retain","","Patricia Camilien","2026-09-22T14:52:14Z"
-"doc_a440cfd066679311","ver_854baa046abc56fc","retain","Substantive official Global Affairs Canada document concerning Haiti.","Patricia Camilien","2026-09-26T04:51:22Z"
-"doc_a594f0dbf555ad74","ver_7dd19cc69c8acc2c","retain","Validated during manual review.","Patricia Camilien","2026-09-26T04:11:41Z"
-"doc_a6d001b623b4253b","ver_6a47e9f8b206dd82","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:19:15Z"
-"doc_a9197c3997c7fe26","ver_7f9815dce5272c4b","retain","Substantive parliamentary evidence concerning Haiti.","Patricia Camilien","2026-09-26T04:18:15Z"
-"doc_aa94f9bddb77c571","ver_ca1cdf7909579738","retain","","",""
-"doc_ad5e860f2f7077ac","ver_314eaddf1c7a24a3","retain","Substantive parliamentary evidence concerning Haiti.","Patricia Camilien","2026-09-26T04:18:15Z"
-"doc_ad9951aa4b0e2521","ver_1363e69151a05e25","retain","Substantive parliamentary information concerning Canadian operations or personnel in Haiti.","Patricia Camilien","2026-09-26T04:28:09Z"
-"doc_adb8a8814280b606","ver_1ddec679c51a1844","retain","Substantive parliamentary intervention concerning Haiti.","Patricia Camilien","2026-09-26T04:21:34Z"
-"doc_aec1e2bf8b20cfa1","ver_8f95f48ecc527c5f","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:16:07Z"
-"doc_aefa70090b869aea","ver_2d720bdb706362b1","retain","Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.","Patricia Camilien","2026-09-26T04:26:38Z"
-"doc_b145fe05279592dc","ver_10cf25564e5feffb","retain","Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.","Patricia Camilien","2026-09-26T04:26:38Z"
-"doc_b5317c136524451e","ver_afdad4cfe6e0c47a","retain","Substantive parliamentary intervention concerning Haiti.","Patricia Camilien","2026-09-26T04:21:34Z"
-"doc_b593e3dd8f4aaac5","ver_1f03520404267bc5","retain","Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.","Patricia Camilien","2026-09-26T04:26:38Z"
-"doc_b964e63128f030cf","ver_52a958d5eb281023","retain","","",""
-"doc_bca84f5624602d72","ver_a91eda5a2b77295e","retain","Substantive parliamentary intervention concerning Haiti.","Patricia Camilien","2026-09-26T04:21:34Z"
-"doc_bdc6d257136a8a2e","ver_f7094440d1aa7f42","retain","","Patricia Camilien","2026-09-26T07:18:38Z"
-"doc_bf71a78343ccb8fb","ver_267129881e7fe08c","retain","","Patricia Camilien","2026-09-26T07:18:38Z"
-"doc_bfe2eb808bb6c7ae","ver_6ec73077acf8de25","retain","Substantive parliamentary evidence concerning Haiti.","Patricia Camilien","2026-09-26T04:18:15Z"
-"doc_c101b7a18f1fba1c","ver_2c3124caf4858ab8","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:19:15Z"
-"doc_c454b0781bd6c1f9","ver_0b22dc80bcbbcdbd","retain","","Patricia Camilien","2026-09-22T14:52:14Z"
-"doc_c7c9019fd6e063cc","ver_a963b0923a3025b4","retain","Substantive parliamentary intervention concerning Haiti.","Patricia Camilien","2026-09-26T04:21:34Z"
-"doc_c896327ce6a51da2","ver_b6266d1e29f29eb8","retain","","",""
-"doc_cdf15682314190cf","ver_e7d223ff948277cc","retain","Substantive parliamentary discussion concerning Haiti.","Patricia Camilien","2026-09-26T04:13:53Z"
-"doc_d0b3bfbe0a028045","ver_41ac3d40aa8ac884","retain","Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.","Patricia Camilien","2026-09-26T04:26:38Z"
-"doc_d17bf813357d21bb","ver_306c47abdc586eb9","retain","Substantive parliamentary information concerning Canadian operations or personnel in Haiti.","Patricia Camilien","2026-09-26T04:28:09Z"
-"doc_d337a104c593ca6c","ver_d751d181955aeec7","retain","Substantive parliamentary discussion concerning Haiti.","Patricia Camilien","2026-09-26T04:13:53Z"
-"doc_d3a0bd12e53725e7","ver_4410efa0c2721494","retain","Validated during manual review.","Patricia Camilien","2026-09-26T04:11:41Z"
-"doc_d4ba178c32fff813","ver_72feb17c0983ce69","retain","Substantive official Global Affairs Canada document concerning Haiti.","Patricia Camilien","2026-09-26T04:51:22Z"
-"doc_d555c489f6b3563c","ver_60ebf8ec2b2bd592","retain","","Patricia Camilien","2026-09-22T14:52:14Z"
-"doc_d59f9b9d59fb81cd","ver_3d63a51290b25157","retain","Substantive parliamentary intervention concerning Haiti.","Patricia Camilien","2026-09-26T04:21:34Z"
-"doc_d9409a3e9b107e60","ver_24df947de27cefa7","retain","","Patricia Camilien","2026-09-22T08:36:21Z"
-"doc_d99238acda52680c","ver_a6770efda85eb629","retain","Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.","Patricia Camilien","2026-09-26T04:26:38Z"
-"doc_d9b13eb6aaa27e13","ver_aad1302156b6e32a","retain","","Patricia Camilien","2026-09-26T07:18:38Z"
-"doc_db68b8a0bc7ef94e","ver_ead9ac3b49264eb4","retain","Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.","Patricia Camilien","2026-09-26T04:26:38Z"
-"doc_dc00c745f340bc51","ver_7e00f39838eee4e2","retain","Substantive parliamentary intervention concerning Haiti.","Patricia Camilien","2026-09-26T04:21:34Z"
-"doc_dce04c4a72239704","ver_49fed197b6b3852f","retain","Validated during manual review.","Patricia Camilien","2026-09-26T04:11:41Z"
-"doc_dec9208f0023dc43","ver_2f088c1c1731ce29","retain","Substantive parliamentary evidence concerning Haiti.","Patricia Camilien","2026-09-26T04:18:15Z"
-"doc_df22bbd080fc675e","ver_a4c116cb83e559b5","retain","","Patricia Camilien","2026-09-22T08:36:21Z"
-"doc_e140f5d0e58a5c01","ver_bb13d8adc075d96d","retain","Substantive parliamentary information concerning Canadian operations or personnel in Haiti.","Patricia Camilien","2026-09-26T04:28:09Z"
-"doc_e46389ffd6207c4d","ver_4c1046c49b524359","retain","Substantive parliamentary intervention concerning Haiti.","Patricia Camilien","2026-09-26T04:21:34Z"
-"doc_e5fb720b749ca5a2","ver_ec0b28e2a91d3449","retain","Substantive parliamentary intervention concerning Haiti.","Patricia Camilien","2026-09-26T04:21:34Z"
-"doc_e67d437639b0c02e","ver_a7a021c3159189df","retain","","Patricia Camilien","2026-09-22T08:36:21Z"
-"doc_e84056478e4aa6be","ver_750bd97222dcd6ca","retain","Substantive parliamentary intervention concerning Haiti.","Patricia Camilien","2026-09-26T04:21:34Z"
-"doc_e86d697db083afb8","ver_7c95de09e0a01ef6","retain","","Patricia Camilien","2026-09-22T14:52:14Z"
-"doc_e9bbdbc0f36c40b7","ver_5fa085dbba7fb75d","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:19:15Z"
-"doc_eb0d456dfbf17b64","ver_cacccd5db4c51fbe","retain","Substantive parliamentary intervention concerning Haiti.","Patricia Camilien","2026-09-26T04:21:34Z"
-"doc_ed6882b9667e1c7a","ver_b5ca5e32760b2ff7","retain","Substantive official Global Affairs Canada document concerning Haiti.","Patricia Camilien","2026-09-26T04:51:22Z"
-"doc_ee71500dd9bc8be2","ver_a34e4d9f02f8dcd1","retain","Substantive parliamentary evidence concerning Haiti.","Patricia Camilien","2026-09-26T04:18:15Z"
-"doc_efb13f470393d5e5","ver_220fc80352e40867","retain","Substantive official Global Affairs Canada document concerning Haiti.","Patricia Camilien","2026-09-26T04:51:22Z"
-"doc_f0ffb9ea8039358e","ver_7350991bc57bef1f","retain","Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.","Patricia Camilien","2026-09-26T04:26:38Z"
-"doc_f43c7a0af065dcef","ver_ff24f4ba7c9b7126","retain","Validated during manual review.","Patricia Camilien","2026-09-26T04:11:41Z"
-"doc_f47e82b35ec25429","ver_06dcd03bdbc9bb1c","retain","Substantive parliamentary document concerning Haiti.","Patricia Camilien","2026-09-26T04:16:07Z"
-"doc_f52e050092a968d9","ver_a892e231a776482c","retain","","Patricia Camilien","2026-09-22T08:36:21Z"
-"doc_f5993c7dafaabf0e","ver_8b615d40cf9cf47c","retain","Substantive discussion of Canada's contribution to the UN mission in Haiti.","Patricia Camilien","2026-09-26T04:22:36Z"
-"doc_f59958095583e9eb","ver_3f7ca0e21641fc2e","retain","Substantive parliamentary information concerning Canadian operations or personnel in Haiti.","Patricia Camilien","2026-09-26T04:28:09Z"
-"doc_f5a69ac74f7e5499","ver_70554c1d1954b5f6","retain","Substantive official Global Affairs Canada document concerning Haiti.","Patricia Camilien","2026-09-26T04:51:22Z"
-"doc_f869a25d74c590d3","ver_09674d0209157de1","retain","Substantive parliamentary information concerning Canadian operations or personnel in Haiti.","Patricia Camilien","2026-09-26T04:28:09Z"
+document_id,version_id,decision,notes,reviewer,reviewed_at
+doc_f97a96bc7941acb2,ver_30f0bb4ca7858396,retain,"Substantive expenditure and briefing record detailing funding for Canada’s whole-of-government response to the Haiti crisis, international security coordination, Haitian National Police training and infrastructure, sanctions, humanitarian and development assistance, intelligence coordination, and Canadian Armed Forces support. Appearance date: 2024-05-06; page published: 2024-09-03.",Patricia Camilien,2026-09-26 13:21:07 UTC
+doc_9ec69e5108acfcad,ver_e8a183f2cfdc040e,retain,"Substantive RCMP implementation plan documenting Canada’s integrated response in Haiti, Caribbean deployments, support to the Haitian National Police, intelligence gathering on gangs and destabilizing elites, the Haiti Field Unit, the Integrated Intelligence Cell, interdepartmental reporting, regional security coordination, police training and mentoring, and gender-responsive operational practices. Plan period: 2023–2029; publication date uncertain.",Patricia Camilien,2026-09-26 13:24:27 UTC
+doc_d2d9aac6534a54ce,ver_7c545d5235e6a141,retain,"Substantive RCMP annual report with a dedicated Haiti section documenting Canadian participation in BINUH, training and mentoring of the Haitian National Police, adaptation to escalating violence, regional deployment practices, and the work of Canadian police and civilian experts. Reporting period: 2024–2025; exact publication date unavailable.",Patricia Camilien,2026-09-26 13:22:06 UTC
+doc_c66aba07877243fe,ver_97b7dc1dc11dc8fd,retain,"Substantive ministerial speech on reconstruction governance, MINUSTAH, Canadian corrections deployment, security and justice reform, and peace and security funding in Haiti. Official date: 2010-05-21.",Patricia Camilien,2026-09-26 13:13:48 UTC
+doc_79aec294241bb2bc,ver_e6f2c1895def4d64,retain,"Substantive ministerial statement on Canada’s reconstruction leadership, stabilization and security projects, police capacity, border security, prison reform, justice, and long-term engagement in Haiti. Official date: 2010-07-12.",Patricia Camilien,2026-09-26 13:15:59 UTC
+doc_7cecb5ad0657869c,ver_4b548d7e346b06e9,retain,"Substantive ministerial speech defining Haiti as a key aspect of Canadian foreign policy and detailing MINUSTAH, the DART and Canadian Forces deployment, humanitarian assistance, international coordination, aid effectiveness, and the transition from emergency response to long-term reconstruction. Official date: 2010-01-25.",Patricia Camilien,2026-09-26 13:17:06 UTC
+doc_5c4fd786da08dd80,ver_62d6ad710cf140b8,retain,"Detailed whole-of-government record covering Canadian Forces deployment, START coordination, CIDA funding, RCMP and corrections deployments, Haitian National Police training and equipment, border and community security, justice and prison reform, immigration measures, reconstruction governance, and debt relief. Official date: 2010-07-12.",Patricia Camilien,2026-09-26 13:18:09 UTC
+doc_3be7e12758d82756,ver_3b9f1c0b96dfba08,retain,"Substantive ministerial readout addressing the assassination of President Jovenel Moïse, impunity, political dialogue, elections, insecurity, gang violence, internal displacement, humanitarian access, and Canadian support for stability. Official date: 2021-07-13. Metadata correction needed: news_release to readout.",Patricia Camilien,2026-09-26 13:19:02 UTC
+doc_01014bd134ebab17,ver_dd25a6b8fd4191ec,retain,"Substantive funding announcement detailing nine Canadian initiatives, including Haitian National Police training, women’s participation in policing, security capacity and infrastructure, humanitarian assistance, health, and food security. It also situates the funding within Canada’s long-term peace-mission, military, RCMP, corrections, and development engagement. Official date: 2022-01-21.",Patricia Camilien,2026-09-26 13:19:58 UTC
+doc_f58312cd85500bb9,ver_0d0bea3f615071af,retain,"Substantive ministerial readout covering $60 million in Canadian funding, the Multinational Security Support mission, a Regional Maritime Security Initiative, transnational organized crime in Haiti and the Caribbean, institutional strengthening, elections, impunity, and regional stability. Meeting date: 2025-09-25. Metadata correction needed: news_release to readout.",Patricia Camilien,2026-09-26 13:23:17 UTC
+doc_98ab02dc33b997a7,ver_b143d0957b3633b6,retain,Substantive official Global Affairs Canada document concerning Haiti.,Patricia Camilien,2026-09-26T04:51:22Z
+doc_7ca740d5aef72797,ver_2b2e351f2c41ec06,retain,Retain; substantive Canada-Haiti relations page. Family classification requires correction.,Patricia Camilien,2026-09-26T04:51:22Z
+doc_8beb617c16e0a8f8,ver_d0527561b4aa8697,retain,Substantive official Global Affairs Canada document concerning Haiti.,Patricia Camilien,2026-09-26T04:51:22Z
+doc_d4ba178c32fff813,ver_72feb17c0983ce69,retain,Substantive official Global Affairs Canada document concerning Haiti.,Patricia Camilien,2026-09-26T04:51:22Z
+doc_a440cfd066679311,ver_854baa046abc56fc,retain,Substantive official Global Affairs Canada document concerning Haiti.,Patricia Camilien,2026-09-26T04:51:22Z
+doc_ed6882b9667e1c7a,ver_b5ca5e32760b2ff7,retain,Substantive official Global Affairs Canada document concerning Haiti.,Patricia Camilien,2026-09-26T04:51:22Z
+doc_69d48fb2875b3537,ver_35e69fb89c7d23f8,retain,Substantive official Global Affairs Canada document concerning Haiti.,Patricia Camilien,2026-09-26T04:51:22Z
+doc_446ed6e0029a3c15,ver_85fa4bacfbbcf323,retain,,Patricia Camilien,2026-09-22T08:36:21Z
+doc_951a3585c8cc0883,ver_b1efa9d1c7cc1850,retain,Retain; substantive ministerial meeting on Haiti. Family classification requires correction.,Patricia Camilien,2026-09-26T04:51:22Z
+doc_efb13f470393d5e5,ver_220fc80352e40867,retain,Substantive official Global Affairs Canada document concerning Haiti.,Patricia Camilien,2026-09-26T04:51:22Z
+doc_6c20483be6a4fdae,ver_a78278390cc367a0,retain,Substantive official Global Affairs Canada document concerning Haiti.,Patricia Camilien,2026-09-26T04:51:22Z
+doc_2d57be6a22f9f43b,ver_c67f0d180789753f,retain,Substantive official Global Affairs Canada document concerning Haiti.,Patricia Camilien,2026-09-26T04:51:22Z
+doc_83e9a22aa6a888b4,ver_59fe6300d4cd4c75,retain,Substantive official Global Affairs Canada document concerning Haiti.,Patricia Camilien,2026-09-26T04:51:22Z
+doc_f5a69ac74f7e5499,ver_70554c1d1954b5f6,retain,Substantive official Global Affairs Canada document concerning Haiti.,Patricia Camilien,2026-09-26T04:51:22Z
+doc_7482c0e648fac8c5,ver_ad9b34ed7f2f075e,retain,,Patricia Camilien,2026-09-26T07:21:45Z
+doc_2535ac242fc24e1b,ver_7025be511a77db9a,retain,Substantive official Global Affairs Canada document concerning Haiti.,Patricia Camilien,2026-09-26T04:51:22Z
+doc_f43c7a0af065dcef,ver_ff24f4ba7c9b7126,retain,Validated during manual review.,Patricia Camilien,2026-09-26T04:11:41Z
+doc_0600194fddc50308,ver_9a2435fa0243f7d2,retain,Validated during manual review.,Patricia Camilien,2026-09-26T04:11:41Z
+doc_89c03871212e57d1,ver_287246431bc7e43a,retain,Validated during manual review.,Patricia Camilien,2026-09-26T04:11:41Z
+doc_53c8e53f372060e4,ver_775e1d52e6e6ac21,retain,Validated during manual review.,Patricia Camilien,2026-09-26T04:11:41Z
+doc_33e8d977deaec6b4,ver_9db88e0e8bd97552,retain,Validated during manual review.,Patricia Camilien,2026-09-26T04:11:41Z
+doc_74d86079e84f4956,ver_e9299e20a731b9c8,retain,Validated during manual review.,Patricia Camilien,2026-09-26T04:11:41Z
+doc_40864f7051423269,ver_bc73654f99b4193e,retain,Validated during manual review.,Patricia Camilien,2026-09-26T04:11:41Z
+doc_d3a0bd12e53725e7,ver_4410efa0c2721494,retain,Validated during manual review.,Patricia Camilien,2026-09-26T04:11:41Z
+doc_a594f0dbf555ad74,ver_7dd19cc69c8acc2c,retain,Validated during manual review.,Patricia Camilien,2026-09-26T04:11:41Z
+doc_9383c9876e29ccab,ver_87275eb30b17660e,retain,Validated during manual review.,Patricia Camilien,2026-09-26T04:11:41Z
+doc_dce04c4a72239704,ver_49fed197b6b3852f,retain,Validated during manual review.,Patricia Camilien,2026-09-26T04:11:41Z
+doc_dc00c745f340bc51,ver_7e00f39838eee4e2,retain,Substantive parliamentary intervention concerning Haiti.,Patricia Camilien,2026-09-26T04:21:34Z
+doc_500daf5c156c3b5b,ver_67bbc81b626565f5,retain,Substantive parliamentary information concerning Canadian operations or personnel in Haiti.,Patricia Camilien,2026-09-26T04:28:09Z
+doc_71db829585470eb6,ver_57aa199bd49e527c,retain,Substantive parliamentary information concerning Canadian operations or personnel in Haiti.,Patricia Camilien,2026-09-26T04:28:09Z
+doc_ad9951aa4b0e2521,ver_1363e69151a05e25,retain,Substantive parliamentary information concerning Canadian operations or personnel in Haiti.,Patricia Camilien,2026-09-26T04:28:09Z
+doc_f869a25d74c590d3,ver_09674d0209157de1,retain,Substantive parliamentary information concerning Canadian operations or personnel in Haiti.,Patricia Camilien,2026-09-26T04:28:09Z
+doc_032b13e0734e67f2,ver_6f37b65563d67bd2,retain,Substantive parliamentary information concerning Canadian operations or personnel in Haiti.,Patricia Camilien,2026-09-26T04:28:09Z
+doc_d17bf813357d21bb,ver_306c47abdc586eb9,retain,Substantive parliamentary information concerning Canadian operations or personnel in Haiti.,Patricia Camilien,2026-09-26T04:28:09Z
+doc_e140f5d0e58a5c01,ver_bb13d8adc075d96d,retain,Substantive parliamentary information concerning Canadian operations or personnel in Haiti.,Patricia Camilien,2026-09-26T04:28:09Z
+doc_3a07bdeadca396b4,ver_c5e76d53c78d44a6,retain,Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.,Patricia Camilien,2026-09-26T04:26:38Z
+doc_d0b3bfbe0a028045,ver_41ac3d40aa8ac884,retain,Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.,Patricia Camilien,2026-09-26T04:26:38Z
+doc_927f0c33b0ec1e84,ver_b4b5a82d9fd001f6,retain,Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.,Patricia Camilien,2026-09-26T04:26:38Z
+doc_f59958095583e9eb,ver_3f7ca0e21641fc2e,retain,Substantive parliamentary information concerning Canadian operations or personnel in Haiti.,Patricia Camilien,2026-09-26T04:28:09Z
+doc_b145fe05279592dc,ver_10cf25564e5feffb,retain,Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.,Patricia Camilien,2026-09-26T04:26:38Z
+doc_4fb82be7d86a0a7d,ver_e758898c18f1c2a8,retain,Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.,Patricia Camilien,2026-09-26T04:26:38Z
+doc_0e281c49fe81bff5,ver_881ca8d9cfaa6ab3,retain,Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.,Patricia Camilien,2026-09-26T04:26:38Z
+doc_9b060de034f3e96b,ver_e3bd4e39b30bae7d,retain,Substantive parliamentary information concerning Canadian operations or personnel in Haiti.,Patricia Camilien,2026-09-26T04:28:09Z
+doc_844143046dfc23b3,ver_fe41ca03f0dd688a,retain,Substantive parliamentary information concerning Canadian operations or personnel in Haiti.,Patricia Camilien,2026-09-26T04:28:09Z
+doc_14acf4ec1d8c1ed0,ver_48760578250de19e,retain,Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.,Patricia Camilien,2026-09-26T04:26:38Z
+doc_db68b8a0bc7ef94e,ver_ead9ac3b49264eb4,retain,Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.,Patricia Camilien,2026-09-26T04:26:38Z
+doc_96858fb16638e38f,ver_2f4705e59713ffd2,retain,Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.,Patricia Camilien,2026-09-26T04:26:38Z
+doc_4caa7b7c4b8aa027,ver_d1ecbb62bf36be33,retain,Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.,Patricia Camilien,2026-09-26T04:26:38Z
+doc_aefa70090b869aea,ver_2d720bdb706362b1,retain,Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.,Patricia Camilien,2026-09-26T04:26:38Z
+doc_b593e3dd8f4aaac5,ver_1f03520404267bc5,retain,Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.,Patricia Camilien,2026-09-26T04:26:38Z
+doc_f0ffb9ea8039358e,ver_7350991bc57bef1f,retain,Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.,Patricia Camilien,2026-09-26T04:26:38Z
+doc_194f5a629b87289c,ver_35e48ee7135c34b3,retain,Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.,Patricia Camilien,2026-09-26T04:26:38Z
+doc_57ace9759bc4427a,ver_01b30025d5fe06ab,retain,Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.,Patricia Camilien,2026-09-26T04:26:38Z
+doc_d99238acda52680c,ver_a6770efda85eb629,retain,Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.,Patricia Camilien,2026-09-26T04:26:38Z
+doc_1d78324c20e585d3,ver_40ec041ea57eed15,retain,Substantive parliamentary intervention concerning Canadian policy or operations in Haiti.,Patricia Camilien,2026-09-26T04:26:38Z
+doc_bca84f5624602d72,ver_a91eda5a2b77295e,retain,Substantive parliamentary intervention concerning Haiti.,Patricia Camilien,2026-09-26T04:21:34Z
+doc_454a36fc4430e64d,ver_08308d1e1fd195e4,retain,Substantive parliamentary intervention concerning Haiti.,Patricia Camilien,2026-09-26T04:21:34Z
+doc_e46389ffd6207c4d,ver_4c1046c49b524359,retain,Substantive parliamentary intervention concerning Haiti.,Patricia Camilien,2026-09-26T04:21:34Z
+doc_3890012ff6a1282e,ver_898fffb2167392aa,retain,Substantive parliamentary intervention concerning Haiti.,Patricia Camilien,2026-09-26T04:21:34Z
+doc_d59f9b9d59fb81cd,ver_3d63a51290b25157,retain,Substantive parliamentary intervention concerning Haiti.,Patricia Camilien,2026-09-26T04:21:34Z
+doc_4fcbea54a5a98aeb,ver_1bcb7f55212aacd0,retain,Substantive parliamentary intervention concerning Haiti.,Patricia Camilien,2026-09-26T04:21:34Z
+doc_adb8a8814280b606,ver_1ddec679c51a1844,retain,Substantive parliamentary intervention concerning Haiti.,Patricia Camilien,2026-09-26T04:21:34Z
+doc_48fd1c27118304f8,ver_0cd85a12e42f4210,retain,Substantive parliamentary intervention concerning Haiti.,Patricia Camilien,2026-09-26T04:21:34Z
+doc_7b392dd1b1efec1a,ver_5d11d00fed934bcf,retain,Substantive parliamentary intervention concerning Haiti.,Patricia Camilien,2026-09-26T04:21:34Z
+doc_c7c9019fd6e063cc,ver_a963b0923a3025b4,retain,Substantive parliamentary intervention concerning Haiti.,Patricia Camilien,2026-09-26T04:21:34Z
+doc_b5317c136524451e,ver_afdad4cfe6e0c47a,retain,Substantive parliamentary intervention concerning Haiti.,Patricia Camilien,2026-09-26T04:21:34Z
+doc_5946db0cb49cc218,ver_7517d84d62e5dd2d,retain,Substantive parliamentary intervention concerning Haiti.,Patricia Camilien,2026-09-26T04:21:34Z
+doc_9f90d0f1778ef688,ver_fc60a0983ae2fd95,retain,Substantive parliamentary intervention concerning Haiti.,Patricia Camilien,2026-09-26T04:21:34Z
+doc_f5993c7dafaabf0e,ver_8b615d40cf9cf47c,retain,Substantive discussion of Canada's contribution to the UN mission in Haiti.,Patricia Camilien,2026-09-26T04:22:36Z
+doc_03815c488dc4ac1c,ver_67aca387ca3fa422,retain,Substantive parliamentary intervention concerning Haiti.,Patricia Camilien,2026-09-26T04:21:34Z
+doc_e84056478e4aa6be,ver_750bd97222dcd6ca,retain,Substantive parliamentary intervention concerning Haiti.,Patricia Camilien,2026-09-26T04:21:34Z
+doc_eb0d456dfbf17b64,ver_cacccd5db4c51fbe,retain,Substantive parliamentary intervention concerning Haiti.,Patricia Camilien,2026-09-26T04:21:34Z
+doc_e5fb720b749ca5a2,ver_ec0b28e2a91d3449,retain,Substantive parliamentary intervention concerning Haiti.,Patricia Camilien,2026-09-26T04:21:34Z
+doc_5663bc09ceea0dbd,ver_27451923c2dfadaa,retain,Substantive parliamentary intervention concerning Haiti.,Patricia Camilien,2026-09-26T04:21:34Z
+doc_19a800832566b15e,ver_c01e3b9198cb8f00,retain,Substantive parliamentary intervention concerning Haiti.,Patricia Camilien,2026-09-26T04:21:34Z
+doc_bdc6d257136a8a2e,ver_f7094440d1aa7f42,retain,,Patricia Camilien,2026-09-26T07:18:38Z
+doc_d9b13eb6aaa27e13,ver_aad1302156b6e32a,retain,,Patricia Camilien,2026-09-26T07:18:38Z
+doc_22a65ab9fb583711,ver_c08ce462e7929598,retain,,Patricia Camilien,2026-09-26T07:18:38Z
+doc_bf71a78343ccb8fb,ver_267129881e7fe08c,retain,,Patricia Camilien,2026-09-26T07:18:38Z
+doc_0fb6f808b3f21c9e,ver_6995c39c842c0281,retain,,Patricia Camilien,2026-09-26T07:18:38Z
+doc_c896327ce6a51da2,ver_b6266d1e29f29eb8,retain,,,
+doc_85b0dc117c1ac5bf,ver_9ae5df081e881544,retain,,,
+doc_5a0026175b67d628,ver_5213f9abf3483f64,retain,,,
+doc_b964e63128f030cf,ver_52a958d5eb281023,retain,,,
+doc_aa94f9bddb77c571,ver_ca1cdf7909579738,retain,,,
+doc_572fe588a1e20575,ver_58ac5f81feddea4f,retain,,Patricia Camilien,2026-09-22T14:52:14Z
+doc_c454b0781bd6c1f9,ver_0b22dc80bcbbcdbd,retain,,Patricia Camilien,2026-09-22T14:52:14Z
+doc_0f6bb964aa87dfd6,ver_56d242a374a1217d,retain,,Patricia Camilien,2026-09-22T14:52:14Z
+doc_e86d697db083afb8,ver_7c95de09e0a01ef6,retain,,Patricia Camilien,2026-09-22T14:52:14Z
+doc_df22bbd080fc675e,ver_a4c116cb83e559b5,retain,,Patricia Camilien,2026-09-22T08:36:21Z
+doc_50bc0e9662ed4a7f,ver_35043887d26de99b,retain,,Patricia Camilien,2026-09-22T08:36:21Z
+doc_472b62aa5d6660ea,ver_bc9f5c714fafcfb4,retain,,Patricia Camilien,2026-09-22T08:36:21Z
+doc_f52e050092a968d9,ver_a892e231a776482c,retain,,Patricia Camilien,2026-09-22T08:36:21Z
+doc_20635e8af9638f0c,ver_d4761ddd0d29dc86,retain,,Patricia Camilien,2026-09-22T08:36:21Z
+doc_1d1eaafa5cce2a2d,ver_0200815d4c3ef1a2,retain,,Patricia Camilien,2026-09-22T08:36:21Z
+doc_6be9585faccc4f7a,ver_dbd0d3b99f400115,retain,,Patricia Camilien,2026-09-22T08:36:21Z
+doc_a6d001b623b4253b,ver_6a47e9f8b206dd82,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:19:15Z
+doc_9a7f7cf6121d615e,ver_96fcbdb62dd1723a,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:19:15Z
+doc_353caf05a1ef2035,ver_0b777450fe98608d,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:19:15Z
+doc_72247a4860135343,ver_c1609619b955b8fd,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:19:15Z
+doc_416062e105e58e2f,ver_925cc00885e6c177,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:19:15Z
+doc_50799bd125c16c7d,ver_ce2cf4b446cfb861,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:19:15Z
+doc_9ed93e8a637fe724,ver_238c308c4e3d7b6a,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:19:15Z
+doc_1a486b283d9be192,ver_33d2bdca014c166e,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:19:15Z
+doc_117e2d2488deb7ba,ver_d3e20d254ede718b,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:19:15Z
+doc_e9bbdbc0f36c40b7,ver_5fa085dbba7fb75d,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:19:15Z
+doc_20cfb1018adb938f,ver_c59ddf8e54fb5268,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:19:15Z
+doc_c101b7a18f1fba1c,ver_2c3124caf4858ab8,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:19:15Z
+doc_ee71500dd9bc8be2,ver_a34e4d9f02f8dcd1,retain,Substantive parliamentary evidence concerning Haiti.,Patricia Camilien,2026-09-26T04:18:15Z
+doc_a9197c3997c7fe26,ver_7f9815dce5272c4b,retain,Substantive parliamentary evidence concerning Haiti.,Patricia Camilien,2026-09-26T04:18:15Z
+doc_ad5e860f2f7077ac,ver_314eaddf1c7a24a3,retain,Substantive parliamentary evidence concerning Haiti.,Patricia Camilien,2026-09-26T04:18:15Z
+doc_dec9208f0023dc43,ver_2f088c1c1731ce29,retain,Substantive parliamentary evidence concerning Haiti.,Patricia Camilien,2026-09-26T04:18:15Z
+doc_5257b602e9842a20,ver_b0e8130836436eeb,retain,Substantive parliamentary evidence concerning Haiti.,Patricia Camilien,2026-09-26T04:18:15Z
+doc_bfe2eb808bb6c7ae,ver_6ec73077acf8de25,retain,Substantive parliamentary evidence concerning Haiti.,Patricia Camilien,2026-09-26T04:18:15Z
+doc_36f22a42bdeb158b,ver_52e1e0643fb9f6e5,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:16:07Z
+doc_f47e82b35ec25429,ver_06dcd03bdbc9bb1c,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:16:07Z
+doc_9d8073d4ffe93717,ver_e2cb4dac047da92d,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:16:07Z
+doc_0db0645f10aa94b2,ver_9c77177f915d411f,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:16:07Z
+doc_23c7d440fbadae60,ver_987f45ccc774417e,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:16:07Z
+doc_64c46e4015002689,ver_dd2d4aebdb1744fa,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:16:07Z
+doc_777c05aa64428fd2,ver_a78cd1663d5afb4f,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:16:07Z
+doc_aec1e2bf8b20cfa1,ver_8f95f48ecc527c5f,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:16:07Z
+doc_58ba5bc817caf2f4,ver_2cf0c7ce805f79a1,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:16:07Z
+doc_05e31b838990b4f1,ver_625116bef9c551d9,retain,Substantive parliamentary document concerning Haiti.,Patricia Camilien,2026-09-26T04:16:07Z
+doc_8d7d9dfa53226326,ver_6a89deaba891f4d3,retain,Substantive parliamentary evidence concerning Haiti.,Patricia Camilien,2026-09-26T04:18:15Z
+doc_d337a104c593ca6c,ver_d751d181955aeec7,retain,Substantive parliamentary discussion concerning Haiti.,Patricia Camilien,2026-09-26T04:13:53Z
+doc_81da15c402a885fd,ver_9760a557523af81b,retain,Substantive parliamentary discussion concerning Haiti.,Patricia Camilien,2026-09-26T04:13:53Z
+doc_33463407c3bb7e6d,ver_05444657228501fd,retain,Substantive parliamentary discussion concerning Haiti.,Patricia Camilien,2026-09-26T04:13:53Z
+doc_cdf15682314190cf,ver_e7d223ff948277cc,retain,Substantive parliamentary discussion concerning Haiti.,Patricia Camilien,2026-09-26T04:13:53Z
+doc_5e34174ad5474dde,ver_5fbc17e9fbc44c62,retain,,Patricia Camilien,2026-09-22T08:36:21Z
+doc_e67d437639b0c02e,ver_a7a021c3159189df,retain,,Patricia Camilien,2026-09-22T08:36:21Z
+doc_d555c489f6b3563c,ver_60ebf8ec2b2bd592,retain,,Patricia Camilien,2026-09-22T14:52:14Z
+doc_a3ea7a0fc18673ba,ver_602f343a2f971e99,retain,,Patricia Camilien,2026-09-22T14:52:14Z
+doc_01aa1f5775539743,ver_1ab58ad022ef8644,retain,,Patricia Camilien,2026-09-22T14:52:14Z
+doc_97bcc507a52184aa,ver_f47294839545fb16,retain,,Patricia Camilien,2026-09-22T08:36:21Z
+doc_37f1777035ca16f7,ver_bb707e49fb7aecee,retain,,Patricia Camilien,2026-09-22T08:36:21Z
+doc_d9409a3e9b107e60,ver_24df947de27cefa7,retain,,Patricia Camilien,2026-09-22T08:36:21Z
+doc_a360e58b45294e3b,ver_ce03aa7dbe9ea778,retain,"Haiti is integral to the policy’s argument: Canadian operational experience there informs the renewed defence policy, exemplifies failed-state and integrated operations, supports requirements for combat-capable and rapidly deployable forces, demonstrates the operational value of bilingual personnel, and informs tasks ranging from evacuation and humanitarian assistance to stabilization, reconstruction, rule of law and democracy. Official year: 2005.",Patricia Camilien,2026-09-26 20:19:05 UTC
+doc_54c723c9e9e32ab2,ver_4be410714ac38af7,retain,The defence white paper uses Canadian enforcement of economic sanctions off Haiti as an operational example supporting its policy for combat-capable forces able to conduct coercive multilateral operations. The Haiti reference is brief but forms part of the policy’s argument about the required range of Canadian military capabilities. Official year: 1994.,Patricia Camilien,2026-09-26 20:16:42 UTC
+doc_6b4c596b50118edb,ver_b88956fc4e0765de,retain,"Substantive defence policy framing Haiti within Canada's contemporary security environment through organized criminal violence, state fragility and transnational organized crime. The policy identifies CAF support to Canadian diplomatic engagement in Haiti and uses Canada's response there to frame capacity development, multilateral action, democracy, sustainable development and lasting security. Official year: 2024; exact publication date not established.",Patricia Camilien,2026-09-26 20:22:46 UTC

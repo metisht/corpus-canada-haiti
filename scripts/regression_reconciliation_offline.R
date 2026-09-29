@@ -10,7 +10,7 @@ source("R/reconcile.R")
 
 candidates <- safe_read_csv("data/candidates.csv")
 review <- safe_read_csv("data/review.csv")
-if (nrow(review) == 137L && all(review$decision == "retain")) {
+if (nrow(review) == 150L && all(review$decision == "retain")) {
   source("scripts/regression_completed_review_offline.R")
   quit(save = "no", status = 0L)
 }

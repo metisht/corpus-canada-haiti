@@ -5,28 +5,18 @@ title-prefix: ""
 lang: fr
 ---
 
-Les interfaces de recherche officielles changent, utilisent JavaScript, limitent les requêtes automatisées ou donnent accès à des index historiques incomplets. Les numérisations anciennes peuvent être dépourvues de texte lisible par machine; l’inférence des dates et la détection de la langue dans les documents bilingues sont volontairement prudentes. Les résultats de recherche servent au repérage et ne constituent jamais des documents du corpus. La classification par famille combine les valeurs par défaut des sources avec des règles modifiables et exige donc un examen scientifique.
+La conservation et l’accessibilité publique des documents officiels varient selon les institutions et les périodes. Les interfaces de recherche changent, les index historiques peuvent être incomplets et certaines publications anciennes ne disposent plus d’une page officielle reliée. Une lacune de récupération indique une couverture manquante plutôt que l’absence d’une activité ou d’une documentation canadienne pertinente.
 
-La première validation signale les lacunes dans `data/retrieval_diagnostics.csv`. Le matériel historique de l’ACDI, les anciennes numérisations parlementaires, les archives des missions de la GRC, les livres blancs et les budgets peuvent notamment nécessiter d’autres interfaces de catalogue ou des listes officielles de départ préparées manuellement. Un échec de récupération indique une lacune dans la couverture, et non l’absence de documents officiels pertinents.
+La symétrie entre les langues officielles est incomplète. Certains organismes ne fournissent qu’une version linguistique accessible, tandis que certaines publications historiques sont inséparablement bilingues. Les versions anglaise et française peuvent aussi employer des formulations différentes. Leur regroupement dépend donc de liens ou d’identifiants faisant autorité; les contreparties manquantes demeurent visibles plutôt que d’être déduites de la ressemblance des titres.
 
-Le nombre de résultats d’un catalogue historique ne mesure pas la couverture. Les publications générales, les numérisations inaccessibles et les documents dont le texte extrait ne porte pas substantiellement sur Haïti sont exclus et consignés. La ROC peut empêcher la validation malgré des métadonnées pertinentes. Une date de modification de page n’établit pas la période d’une opération. Le regroupement bilingue dépend de liens ou d’identifiants officiels; les contreparties manquantes restent des diagnostics explicites. Aucune famille n’est décrite comme couverte avant la réussite des validations ciblées et bornées.
+La qualité de la reconnaissance optique de caractères et de l’extraction de texte varie. Les numérisations composées d’images, les colonnes parlementaires complexes, les textes endommagés et les archives page par page peuvent masquer les en-têtes, les dates, le contexte ou des formulations pertinentes. Les dates de publication ne sont pas toujours disponibles, surtout pour les pages historiques ou continuellement mises à jour; les dates incertaines demeurent explicites. Une date de modification de page n’est pas traitée comme une date de publication.
 
-Le constat exact sur les sanctions historiques est limité : le connecteur de 1991–1998 n’a validé aucun document candidat historique. Cela ne signifie pas qu’Affaires mondiales Canada ne possède aucun document sur les sanctions concernant Haïti; un connecteur distinct couvre les pages actuelles de politique et d’annonce d’AMC. Des numéros historiques de la Gazette, des décrets archivés et des documents d’affaires étrangères peuvent demeurer introuvables ou illisibles en raison d’index incomplets et de la ROC.
+Les institutions diffèrent quant à la longueur, au genre et à la fréquence de leurs publications, ainsi qu’à leurs pratiques de numérisation et d’archivage. Ces différences influencent la visibilité documentaire et la distribution apparente des institutions, familles, concepts et engagements. La visibilité dans le corpus n’équivaut pas à l’importance, à l’effort ou à l’activité gouvernementale.
 
-Cet outil appuie le jugement scientifique sans le remplacer. Consultez le document officiel lié avant de le citer.
+L’attribution institutionnelle désigne l’organisme officiel qui publie ou produit le document, et non tous les organismes ou acteurs associés à l’action documentée. Les familles documentaires simplifient nécessairement des publications qui peuvent combiner plusieurs fonctions, même si plusieurs familles sont attribuées lorsque plusieurs domaines sont représentés de manière substantielle.
 
-La classification automatique avant révision peut produire des faux négatifs,
-notamment lorsque la ROC est médiocre ou qu’un passage substantiel bref ressemble
-à une mention procédurale. Les archives historiques numérisées page par page
-peuvent répartir les en-têtes, dates et passages pertinents sur plusieurs images.
-Certaines publications réellement bilingues ne peuvent pas être séparées
-proprement et demeurent donc un seul document bilingue. Les classifications,
-regroupements de pages, dates et relations bilingues ambigus exigent toujours
-une révision humaine.
-Une liste, un index, une référence procédurale, une comparaison ou une mention
-isolée exclue peut néanmoins présenter un intérêt historique hors du périmètre
-d’inclusion substantielle du corpus. Son motif d’exclusion demeure vérifiable
-même après son retrait de la file active de révision.
-Le total documentaire du tableau de bord utilise les identifiants logiques
-distincts et dépend du corpus retenu réconcilié; des artefacts de rendu périmés
-peuvent autrement afficher un ancien total jusqu’à la régénération du site.
+Le codage conceptuel et spatial dépend de formulations explicites configurées. La correspondance contextuelle et la révision humaine réduisent les faux positifs, mais des concepts implicites peuvent ne pas être détectés, les traductions peuvent employer des expressions différentes et une ROC médiocre peut produire des faux négatifs. L’absence d’un concept confirmé ne prouve pas que l’idée sous-jacente est absente du document.
+
+Le tableau des engagements constitue une couche analytique révisée plutôt qu’un inventaire exhaustif ou une mesure de l’intensité de l’intervention. Le regroupement de documents sous un même engagement peut masquer des variations documentaires, tandis que la séparation des actions exige une preuve officielle explicite. Des dates absentes ou approximatives influencent le positionnement, et la période d’un mandat international peut différer de celle de la participation canadienne. La chronologie seule n’établit pas la causalité.
+
+Cette ressource appuie le jugement scientifique, mais ne remplace pas la consultation du document officiel lié avant toute citation.

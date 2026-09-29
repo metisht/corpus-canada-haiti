@@ -1,209 +1,257 @@
-# Reconciles the completed manual review into active candidates and corpus data.
-# Reads candidates/review/audit CSVs and rewrites them deterministically. It makes
-# no network requests; rejection history, GAC corrections, and 137/209 invariants
-# are checked before output. Called manually after the confirmed review fixture.
+#!/usr/bin/env Rscript
+# Reconciles the authoritative completed review into candidates and corpus.
+# Inputs are the active candidate, review, and validation-history CSV files.
+# Outputs are deterministic candidates, corpus, and append-only audit records.
+# No network access occurs. Human review fields and stable identities are invariants.
 
-source("R/utils.R")
-source("R/discover.R")
-source("R/extract.R")
-source("R/crawl.R")
+for (file in c("R/utils.R", "R/crawl.R"))
+  source(file, encoding = "UTF-8")
 
-rejected_ids <- c("doc_2517f95d9356f704", "doc_3cfa943a7a4225b8",
-  "doc_fbb9f96e232bd24f", "doc_05b993ed424cca1c",
-  "doc_99667ab611ac03ea", "doc_bde72e3958af0f51")
-rejection_reasons <- c(
-  "General worldwide sanctions index; the dedicated Haiti sanctions page is retained separately.",
-  "Haiti appears only in a brief multilateral summary without an autonomous analytical passage.",
-  "Haiti appears in a country list and a brief summary sentence without an autonomous analytical passage.",
-  "Haiti appears only in a list of countries covered by human-rights resolutions; the developed discussion concerns Myanmar.",
-  "General French regulatory-review index; Haiti is only one listed entry.",
-  "English version of the same general regulatory-review index; it was also incorrectly represented as a separate logical document.")
-names(rejection_reasons) <- rejected_ids
+candidate_path <- "data/candidates.csv"
+review_path <- "data/review.csv"
+corpus_path <- "data/corpus.csv"
+changes_path <- "data/validation_changes.csv"
 
-candidates <- safe_read_csv("data/candidates.csv")
-review <- safe_read_csv("data/review.csv")
-diagnostics <- safe_read_csv("data/retrieval_diagnostics.csv")
-changes <- safe_read_csv("data/validation_changes.csv")
-active_rejections <- review[review$document_id %in% rejected_ids &
-  review$decision == "reject", , drop = FALSE]
-already_reconciled <- !any(review$document_id %in% rejected_ids) &&
-  nrow(review) == 137L && all(review$decision == "retain")
+candidates <- safe_read_csv(candidate_path)
+review <- safe_read_csv(review_path)
+changes <- safe_read_csv(changes_path)
+review_before <- review[, review_columns, drop = FALSE]
 
-if (!already_reconciled) {
-  counts <- table(review$decision)
-  if (nrow(review) != 143L || counts[["retain"]] != 137L ||
-      counts[["reject"]] != 6L || any(review$decision == "pending") ||
-      !setequal(active_rejections$document_id, rejected_ids)) {
-    stop("Completed-review starting state does not match the confirmed 137/6/0 state")
-  }
-  if (any(!review$document_id[review$decision == "retain"] %in% candidates$document_id))
-    stop("A retained review decision has no matching candidate")
-  if (any(candidates$review_status == "retain" &
-          !candidates$document_id %in% review$document_id))
-    stop("A retained candidate lacks a review decision")
+if (nrow(review) != 150L || length(unique(review$document_id)) != 150L ||
+    any(review$decision != "retain"))
+  stop("Expected exactly 150 authoritative retain decisions")
+if (!setequal(review$document_id, unique(candidates$document_id)))
+  stop("Candidate and authoritative review document identities differ")
+if (nrow(candidates) != 235L)
+  stop("Expected 235 active candidate versions")
 
-  rejected_versions <- candidates[candidates$document_id %in% rejected_ids,
-                                  , drop = FALSE]
-  rejected_reviews <- active_rejections[match(rejected_versions$document_id,
-                                               active_rejections$document_id), ]
-  rejected_status <- ifelse(rejected_versions$document_id %in%
-    c("doc_2517f95d9356f704", "doc_99667ab611ac03ea", "doc_bde72e3958af0f51"),
-    "non_document", "excluded")
-  audit_rejections <- data.frame(
-    change = "completed_review_rejection", version_id = rejected_versions$version_id,
-    document_id = rejected_versions$document_id, language = rejected_versions$language,
-    title = rejected_versions$title, document_url = rejected_versions$document_url,
-    review_status = "removed_from_active_queue",
-    old_document_id = rejected_versions$document_id, new_document_id = "",
-    rule = ifelse(rejected_status == "non_document", "general_index",
-                  "below_substantive_threshold"),
-    reason = unname(rejection_reasons[rejected_versions$document_id]),
-    source = rejected_versions$source_id,
-    previous_state = "active_candidate; reviewed reject",
-    resulting_state = paste0("removed; diagnostic ", rejected_status),
-    manual_decision = rejected_reviews$decision, reviewer = rejected_reviews$reviewer,
-    review_timestamp = rejected_reviews$reviewed_at, stringsAsFactors = FALSE)
-  diagnostics_rejections <- data.frame(
-    source_id = rejected_versions$source_id, family = rejected_versions$families,
-    url = rejected_versions$document_url, stage = "completed_review_reconciliation",
-    status = rejected_status,
-    message = paste("manual_reject:", unname(rejection_reasons[rejected_versions$document_id])),
-    http_status = NA_integer_, occurred_at = rejected_reviews$reviewed_at,
-    run_id = "manual_review_history", publication_date = rejected_versions$publication_date,
-    stringsAsFactors = FALSE)
-  existing_diagnostic_keys <- paste(diagnostics$source_id, diagnostics$url,
-    diagnostics$stage, diagnostics$status, diagnostics$message, sep="|")
-  new_diagnostic_keys <- paste(diagnostics_rejections$source_id,
-    diagnostics_rejections$url, diagnostics_rejections$stage,
-    diagnostics_rejections$status, diagnostics_rejections$message, sep="|")
-  diagnostics_rejections <- diagnostics_rejections[
-    !new_diagnostic_keys %in% existing_diagnostic_keys, , drop=FALSE]
-  candidates <- candidates[!candidates$document_id %in% rejected_ids, , drop = FALSE]
-  review <- review[!review$document_id %in% rejected_ids, , drop = FALSE]
-  changes <- bind_rows_base(list(changes, audit_rejections))
-  diagnostics <- bind_rows_base(list(diagnostics, diagnostics_rejections))
-}
+metadata_before <- candidates
 
-stale_review_status <- candidates$document_id %in%
-  review$document_id[review$decision == "retain"] &
-  candidates$review_status != "retain"
-if (any(stale_review_status)) {
-  corrected_status <- candidates[stale_review_status, , drop=FALSE]
-  status_audit <- data.frame(
-    change="document_review_status_propagated",
-    version_id=corrected_status$version_id,
-    document_id=corrected_status$document_id,
-    language=corrected_status$language,
-    title=corrected_status$title,
-    document_url=corrected_status$document_url,
-    review_status="retain",
-    old_document_id=corrected_status$document_id,
-    new_document_id=corrected_status$document_id,
-    rule="authoritative_document_level_review",
-    reason=paste0("Review decision retain propagated to version; previous review_status=",
-                  corrected_status$review_status),
-    source=corrected_status$source_id,
-    previous_state=corrected_status$review_status,
-    resulting_state="retain", manual_decision="retain",
-    reviewer="", review_timestamp="", stringsAsFactors=FALSE)
-  changes <- bind_rows_base(list(changes, status_audit))
-}
-candidates <- apply_review(candidates, review)
-
-retained_gac <- candidates$source_id %in% c("gac_news", "gac_sanctions") &
-  candidates$document_id %in% review$document_id[review$decision == "retain"]
-before_gac <- candidates[retained_gac, , drop = FALSE]
-dated_documents <- c(doc_8beb617c16e0a8f8="2022-11-04",
-  doc_d4ba178c32fff813="2022-11-04", doc_98ab02dc33b997a7="2022-11-14",
-  doc_a440cfd066679311="2022-11-19", doc_ed6882b9667e1c7a="2022-12-05",
-  doc_69d48fb2875b3537="2022-12-20", doc_446ed6e0029a3c15="2023-01-13",
-  doc_951a3585c8cc0883="2023-06-15", doc_efb13f470393d5e5="2023-09-21",
-  doc_6c20483be6a4fdae="2024-06-21", doc_2d57be6a22f9f43b="2024-06-21",
-  doc_83e9a22aa6a888b4="2025-03-21", doc_f5a69ac74f7e5499="2025-03-21")
-for (document_id in names(dated_documents)) {
+official_dates <- c(
+  doc_c66aba07877243fe = "2010-05-21",
+  doc_79aec294241bb2bc = "2010-07-12",
+  doc_7cecb5ad0657869c = "2010-01-25",
+  doc_5c4fd786da08dd80 = "2010-07-12",
+  doc_3be7e12758d82756 = "2021-07-13",
+  doc_f58312cd85500bb9 = "2025-09-25"
+)
+for (document_id in names(official_dates)) {
   index <- candidates$document_id == document_id
-  candidates$publication_date[index] <- dated_documents[[document_id]]
-  candidates$year[index] <- as.integer(substr(dated_documents[[document_id]], 1, 4))
-  candidates$date_source[index] <- "explicit official release date"
+  if (sum(index) != 2L || !setequal(candidates$language[index], c("en", "fr")))
+    stop("Expected a bilingual pair for metadata correction: ", document_id)
+  candidates$publication_date[index] <- official_dates[[document_id]]
+  candidates$year[index] <- as.integer(substr(official_dates[[document_id]], 1, 4))
+  candidates$date_source[index] <- "explicit official document date"
   candidates$date_status[index] <- "in_range"
 }
-evergreen <- candidates$document_id %in% c("doc_2535ac242fc24e1b",
-  "doc_7482c0e648fac8c5", "doc_7ca740d5aef72797")
-candidates$publication_date[evergreen] <- ""
-candidates$year[evergreen] <- NA_integer_
-candidates$date_source[evergreen] <- "page modification date only"
-candidates$date_status[evergreen] <- "uncertain"
-relations <- candidates$document_id == "doc_7ca740d5aef72797"
-candidates$families[relations] <- "development"
-candidates$document_type[relations] <- "country_relations"
-meeting <- candidates$document_id == "doc_951a3585c8cc0883"
-candidates$families[meeting] <- "statements"
-candidates$document_type[meeting] <- "news_release"
 
-for (document_id in unique(candidates$document_id[retained_gac])) {
-  index <- which(candidates$document_id == document_id)
-  if (length(index) < 2L) next
-  preferred <- index[match("en", candidates$language[index])]
-  if (is.na(preferred)) preferred <- index[1]
-  candidates$families[index] <- candidates$families[preferred]
-  candidates$document_type[index] <- candidates$document_type[preferred]
-}
+readouts <- candidates$document_id %in%
+  c("doc_3be7e12758d82756", "doc_f58312cd85500bb9")
+candidates$document_type[readouts] <- "readout"
 
-after_gac <- candidates[match(before_gac$version_id, candidates$version_id), , drop = FALSE]
-metadata_columns <- c("publication_date", "year", "date_source", "date_status",
-                      "families", "document_type")
-metadata_changed <- vapply(seq_len(nrow(before_gac)), function(i) {
-  !identical(as.character(before_gac[i, metadata_columns]),
-             as.character(after_gac[i, metadata_columns]))
+briefing <- candidates$document_id == "doc_f97a96bc7941acb2"
+if (sum(briefing) != 2L || !setequal(candidates$language[briefing], c("en", "fr")))
+  stop("Expected the bilingual 2024-05-06 Supplementary Estimates briefing")
+candidates$event_start_date[briefing] <- "2024-05-06"
+candidates$event_end_date[briefing] <- ""
+candidates$publication_date[briefing] <- "2024-09-03"
+candidates$year[briefing] <- 2024L
+candidates$date_source[briefing] <-
+  "event_start_date; official page publication date 2024-09-03"
+candidates$date_status[briefing] <- "in_range"
+
+annual <- candidates$document_id == "doc_d2d9aac6534a54ce"
+candidates$publication_date[annual] <- ""
+candidates$event_start_date[annual] <- ""
+candidates$event_end_date[annual] <- ""
+candidates$year[annual] <- 2025L
+candidates$date_source[annual] <-
+  "official 2024–2025 reporting period; exact publication date unavailable"
+candidates$date_status[annual] <- "in_range"
+
+plan <- candidates$document_id == "doc_9ec69e5108acfcad"
+candidates$publication_date[plan] <- ""
+candidates$event_start_date[plan] <- ""
+candidates$event_end_date[plan] <- ""
+candidates$year[plan] <- NA_integer_
+candidates$date_source[plan] <-
+  "publication date uncertain; 2023–2029 is the plan period"
+candidates$date_status[plan] <- "uncertain"
+
+metadata_columns <- c(
+  "publication_date", "page_last_modified", "event_start_date",
+  "event_end_date", "year", "date_source", "date_status", "document_type"
+)
+changed <- vapply(seq_len(nrow(candidates)), function(index) {
+  !identical(as.character(metadata_before[index, metadata_columns]),
+             as.character(candidates[index, metadata_columns]))
 }, logical(1))
-if (any(metadata_changed)) {
-  old_values <- apply(before_gac[metadata_changed, metadata_columns, drop=FALSE], 1,
-    function(row) paste(names(row), row, sep="=", collapse="; "))
-  new_values <- apply(after_gac[metadata_changed, metadata_columns, drop=FALSE], 1,
-    function(row) paste(names(row), row, sep="=", collapse="; "))
-  corrected <- after_gac[metadata_changed, , drop=FALSE]
-  audit_metadata <- data.frame(change="authoritative_gac_metadata_correction",
-    version_id=corrected$version_id, document_id=corrected$document_id,
-    language=corrected$language, title=corrected$title,
-    document_url=corrected$document_url, review_status="retain",
-    old_document_id=corrected$document_id, new_document_id=corrected$document_id,
-    rule="bilingual_authoritative_metadata",
-    reason=paste0("Before: ", old_values, " | After: ", new_values),
-    source=corrected$source_id, previous_state=old_values, resulting_state=new_values,
-    manual_decision="retain", reviewer="", review_timestamp="",
-    stringsAsFactors=FALSE)
-  changes <- bind_rows_base(list(changes, audit_metadata))
+
+review_index <- match(candidates$document_id, review$document_id)
+if (any(changed)) {
+  old_state <- apply(metadata_before[changed, metadata_columns, drop = FALSE], 1,
+    function(row) paste(names(row), row, sep = "=", collapse = "; "))
+  new_state <- apply(candidates[changed, metadata_columns, drop = FALSE], 1,
+    function(row) paste(names(row), row, sep = "=", collapse = "; "))
+  corrected <- candidates[changed, , drop = FALSE]
+  corrected_review <- review[review_index[changed], , drop = FALSE]
+  metadata_audit <- data.frame(
+    change = "completed_review_metadata_correction",
+    version_id = corrected$version_id,
+    document_id = corrected$document_id,
+    language = corrected$language,
+    title = corrected$title,
+    document_url = corrected$document_url,
+    review_status = "retain",
+    old_document_id = corrected$document_id,
+    new_document_id = corrected$document_id,
+    rule = "authoritative_manual_review_metadata",
+    reason = paste0("Before: ", old_state, " | After: ", new_state),
+    source = corrected$source_id,
+    previous_state = old_state,
+    resulting_state = new_state,
+    manual_decision = corrected_review$decision,
+    reviewer = corrected_review$reviewer,
+    review_timestamp = corrected_review$reviewed_at,
+    stringsAsFactors = FALSE
+  )
+  changes <- bind_rows_base(list(changes, metadata_audit))
 }
 
-audit_key <- paste(changes$change, changes$version_id, changes$rule, changes$reason, sep="|")
-changes <- changes[!duplicated(audit_key), , drop=FALSE]
-review <- review[order(review$document_id), review_columns, drop=FALSE]
-review[] <- lapply(review, as.character)
-candidates <- candidates[order(candidates$year, candidates$title, na.last=TRUE),
-                         candidate_columns, drop=FALSE]
+target_ids <- c(names(official_dates), "doc_f97a96bc7941acb2",
+                "doc_d2d9aac6534a54ce", "doc_9ec69e5108acfcad")
+target_rows <- candidates[candidates$document_id %in% target_ids, , drop = FALSE]
+target_review <- review[match(target_rows$document_id, review$document_id),
+                        , drop = FALSE]
+audit_descriptions <- c(
+  doc_c66aba07877243fe = "Official document date set to 2010-05-21.",
+  doc_79aec294241bb2bc = "Official document date set to 2010-07-12.",
+  doc_7cecb5ad0657869c = "Official document date set to 2010-01-25.",
+  doc_5c4fd786da08dd80 = "Official document date set to 2010-07-12.",
+  doc_3be7e12758d82756 = "Official date set to 2021-07-13 and document type set to readout.",
+  doc_f58312cd85500bb9 = "Meeting date set to 2025-09-25 and document type set to readout; page modification remains separate.",
+  doc_f97a96bc7941acb2 = "Appearance date stored as event_start_date 2024-05-06; page publication stored as publication_date 2024-09-03; modification remains separate.",
+  doc_d2d9aac6534a54ce = "2024–2025 retained as a reporting period; no exact publication date assigned.",
+  doc_9ec69e5108acfcad = "2023–2029 retained as a plan period; publication date and year remain uncertain."
+)
+target_state <- apply(target_rows[metadata_columns], 1, function(row)
+  paste(names(row), row, sep = "=", collapse = "; "))
+target_audit <- data.frame(
+  change = "completed_review_metadata_correction",
+  version_id = target_rows$version_id,
+  document_id = target_rows$document_id,
+  language = target_rows$language,
+  title = target_rows$title,
+  document_url = target_rows$document_url,
+  review_status = "retain",
+  old_document_id = target_rows$document_id,
+  new_document_id = target_rows$document_id,
+  rule = "authoritative_manual_review_metadata",
+  reason = unname(audit_descriptions[target_rows$document_id]),
+  source = target_rows$source_id,
+  previous_state = "candidate metadata before authoritative review correction",
+  resulting_state = target_state,
+  manual_decision = target_review$decision,
+  reviewer = target_review$reviewer,
+  review_timestamp = target_review$reviewed_at,
+  stringsAsFactors = FALSE
+)
+changes <- bind_rows_base(list(changes, target_audit))
+
+stale_status <- candidates$review_status != "retain"
+if (any(stale_status)) {
+  corrected <- candidates[stale_status, , drop = FALSE]
+  corrected_review <- review[match(corrected$document_id, review$document_id),
+                             , drop = FALSE]
+  status_audit <- data.frame(
+    change = "document_review_status_propagated",
+    version_id = corrected$version_id,
+    document_id = corrected$document_id,
+    language = corrected$language,
+    title = corrected$title,
+    document_url = corrected$document_url,
+    review_status = "retain",
+    old_document_id = corrected$document_id,
+    new_document_id = corrected$document_id,
+    rule = "authoritative_document_level_review",
+    reason = paste0("Review decision retain propagated to version; previous review_status=",
+                    corrected$review_status),
+    source = corrected$source_id,
+    previous_state = corrected$review_status,
+    resulting_state = "retain",
+    manual_decision = corrected_review$decision,
+    reviewer = corrected_review$reviewer,
+    review_timestamp = corrected_review$reviewed_at,
+    stringsAsFactors = FALSE
+  )
+  changes <- bind_rows_base(list(changes, status_audit))
+}
+
+completed_ids <- c(target_ids, "doc_01014bd134ebab17")
+completed_rows <- candidates[candidates$document_id %in% completed_ids,
+                             , drop = FALSE]
+completed_review <- review[match(completed_rows$document_id, review$document_id),
+                           , drop = FALSE]
+completed_status_audit <- data.frame(
+  change = "document_review_status_propagated",
+  version_id = completed_rows$version_id,
+  document_id = completed_rows$document_id,
+  language = completed_rows$language,
+  title = completed_rows$title,
+  document_url = completed_rows$document_url,
+  review_status = "retain",
+  old_document_id = completed_rows$document_id,
+  new_document_id = completed_rows$document_id,
+  rule = "authoritative_document_level_review",
+  reason = "Completed human-review decision retain propagated to active version.",
+  source = completed_rows$source_id,
+  previous_state = "pending",
+  resulting_state = "retain",
+  manual_decision = completed_review$decision,
+  reviewer = completed_review$reviewer,
+  review_timestamp = completed_review$reviewed_at,
+  stringsAsFactors = FALSE
+)
+changes <- bind_rows_base(list(changes, completed_status_audit))
+
+candidates <- apply_review(candidates, review)
+candidates <- candidates[order(candidates$year, candidates$title,
+                               candidates$language, na.last = TRUE),
+                         candidate_columns, drop = FALSE]
 corpus <- candidates[candidates$document_id %in%
-  review$document_id[review$decision == "retain"], , drop=FALSE]
+  review$document_id[review$decision == "retain"], candidate_columns,
+  drop = FALSE]
 
-if (nrow(review) != 137L || any(review$decision != "retain") ||
-    length(unique(review$document_id)) != 137L) stop("Active review is not 137 retain")
-if (any(rejected_ids %in% candidates$document_id) || any(rejected_ids %in% corpus$document_id))
-  stop("Rejected identity remains active")
-if (any(!review$document_id %in% corpus$document_id) ||
-    any(!corpus$document_id %in% review$document_id)) stop("Corpus/review mismatch")
-if (nrow(corpus) != 209L || length(unique(corpus$document_id)) != 137L ||
-    any(corpus$review_status != "retain")) stop("Retained corpus status propagation failed")
-if (any(duplicated(candidates$version_id)) ||
-    any(duplicated(paste(candidates$document_id, candidates$language))))
-  stop("Duplicate candidate identity")
-if (any(vapply(candidates[c("title","relevance_excerpt","extracted_text")],
-               contains_mojibake, logical(1)))) stop("Mojibake remains")
-
+audit_key <- paste(changes$change, changes$version_id, changes$rule, sep = "|")
+changes <- changes[!duplicated(audit_key), , drop = FALSE]
 changes[] <- lapply(changes, as.character)
 
-write_csv(candidates, "data/candidates.csv")
-write_csv(review, "data/review.csv")
-write_csv(corpus, "data/corpus.csv")
-write_csv(diagnostics, "data/retrieval_diagnostics.csv")
-write_csv(changes, "data/validation_changes.csv")
-message("Completed-review reconciliation: 137 retained logical documents, ",
+briefing_final <- candidates$document_id == "doc_f97a96bc7941acb2"
+annual_final <- candidates$document_id == "doc_d2d9aac6534a54ce"
+plan_final <- candidates$document_id == "doc_9ec69e5108acfcad"
+
+stopifnot(
+  identical(review_before, review[, review_columns, drop = FALSE]),
+  nrow(candidates) == 235L,
+  length(unique(candidates$document_id)) == 150L,
+  nrow(corpus) == 235L,
+  length(unique(corpus$document_id)) == 150L,
+  all(candidates$review_status == "retain"),
+  all(corpus$review_status == "retain"),
+  setequal(unique(corpus$document_id), review$document_id),
+  setequal(corpus$version_id, candidates$version_id),
+  !anyDuplicated(candidates$version_id),
+  !anyDuplicated(candidates[c("document_id", "language")]),
+  all(candidates$publication_date[plan_final] == ""),
+  all(is.na(candidates$year[plan_final])),
+  all(candidates$publication_date[annual_final] == ""),
+  all(candidates$event_start_date[briefing_final] == "2024-05-06"),
+  all(candidates$publication_date[briefing_final] == "2024-09-03")
+)
+
+write_csv(candidates, candidate_path)
+write_csv(corpus, corpus_path)
+write_csv(changes, changes_path)
+
+message("Completed-review reconciliation: 150 retained logical documents, ",
         nrow(corpus), " retained versions")

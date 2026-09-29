@@ -3,12 +3,22 @@
 
 ```{r}
 source(file.path(site_root, "R", "site_i18n.R"), encoding = "UTF-8")
+source(file.path(site_root, "R", "utils.R"), encoding = "UTF-8")
+source(file.path(site_root, "R", "operational_board.R"), encoding = "UTF-8")
+source(file.path(site_root, "R", "spatial_constellation.R"), encoding = "UTF-8")
 L <- site_labels[[site_lang]]
 
 # Data preparation -----------------------------------------------------------
 read_or_empty <- function(path) if (file.exists(path)) read.csv(path, stringsAsFactors = FALSE, check.names = FALSE, na.strings = c("", "NA")) else data.frame()
 docs <- read_or_empty(file.path(site_root, "data", "corpus.csv"))
-required_columns <- c("document_id", "version_id", "title", "year", "publication_date", "page_last_modified", "institution", "families", "language", "document_type", "matched_concepts", "document_url", "format")
+engagements <- read_or_empty(file.path(site_root, "data", "engagements.csv"))
+engagement_documents <- read_or_empty(file.path(site_root, "data", "engagement_documents.csv"))
+engagement_instruments <- read_or_empty(file.path(site_root, "data", "engagement_instruments.csv"))
+spatial_review <- read_or_empty(file.path(site_root, "data", "spatial_review_queue.csv"))
+required_columns <- c("document_id", "version_id", "title", "year", "publication_date", "page_last_modified",
+  "event_start_date", "event_end_date", "institution", "families", "language", "document_type",
+  "operation_name", "international_mission_name", "matched_concepts", "document_url",
+  "concept_coding_state", "official_alternate_urls", "relevance_excerpt", "review_status", "format")
 for (nm in setdiff(required_columns, names(docs))) docs[[nm]] <- NA_character_
 if (!nrow(docs)) docs <- docs[FALSE, required_columns, drop = FALSE]
 
@@ -33,10 +43,26 @@ label_text <- function(x) {
 empty_note <- function(text) cat(sprintf('<p class="empty-state">%s</p>', text))
 
 analytical_docs <- docs[present(docs$document_id), , drop = FALSE]
+allowed_concept_states <- c("confirmed", "pending_review", "reviewed_no_confirmed_concept", "no_configured_match")
+if (any(!analytical_docs$concept_coding_state %in% allowed_concept_states)) {
+  stop("Invalid or blank concept_coding_state in active corpus")
+}
 doc_years <- unique(analytical_docs[!is.na(analytical_docs$year), c("document_id", "year"), drop = FALSE])
 doc_institutions <- unique(analytical_docs[present(analytical_docs$institution), c("document_id", "institution"), drop = FALSE])
 fam <- split_long(analytical_docs$families, analytical_docs$document_id)
-con <- split_long(analytical_docs$matched_concepts, analytical_docs$document_id)
+confirmed_docs <- analytical_docs[analytical_docs$concept_coding_state == "confirmed", , drop = FALSE]
+pending_concept_docs <- unique(analytical_docs$document_id[analytical_docs$concept_coding_state == "pending_review"])
+reviewed_no_confirmed_docs <- unique(analytical_docs$document_id[analytical_docs$concept_coding_state == "reviewed_no_confirmed_concept"])
+no_configured_match_docs <- unique(analytical_docs$document_id[analytical_docs$concept_coding_state == "no_configured_match"])
+concept_denominator_docs <- analytical_docs[analytical_docs$concept_coding_state != "pending_review", , drop = FALSE]
+concept_denominator_years <- unique(concept_denominator_docs[!is.na(concept_denominator_docs$year), c("document_id", "year"), drop = FALSE])
+con <- split_long(confirmed_docs$matched_concepts, confirmed_docs$document_id)
+period_levels <- c("1991–1995", "1996–2000", "2001–2005", "2006–2010", "2011–2015", "2016–2020", "2021–2026")
+period_label <- if (site_lang == "fr") "Période" else "Period"
+period_from_year <- function(year) {
+  cut(year, breaks = c(1991, 1996, 2001, 2006, 2011, 2016, 2021, 2027),
+    right = FALSE, labels = period_levels)
+}
 check_bilingual_consistency(analytical_docs, doc_years, doc_institutions, fam, con, docs)
 
 navy <- "#17324d"
@@ -79,136 +105,516 @@ for (card in cards) cat(sprintf('<div class="indicator-card"><strong>%s</strong>
 cat('</div>')
 ```
 
+::: {.analytical-lenses data-analytical-lenses=""}
+
+## `r L$analytical_lenses`
+
+::: {.lens-introduction}
+`r L$analytical_lenses_intro`
+:::
+
+```{r results='asis'}
+tab_ids <- c("engagements", "spatial", "discourses", "institutions")
+tab_labels <- c(L$lens_engagements, L$lens_spatial, L$lens_discourses, L$lens_institutions)
+cat(sprintf('<div class="lens-tabs" role="tablist" aria-label="%s">', L$analytical_lenses))
+for (tab_index in seq_along(tab_ids)) {
+  cat(sprintf('<button type="button" id="lens-tab-%s" role="tab" aria-controls="lens-panel-%s" aria-selected="%s" tabindex="%s">%s</button>',
+    tab_ids[tab_index], tab_ids[tab_index], if (tab_index == 1L) "true" else "false",
+    if (tab_index == 1L) "0" else "-1", tab_labels[tab_index]))
+}
+cat('</div>')
+```
+
+::: {#lens-panel-engagements .lens-panel role="tabpanel" aria-labelledby="lens-tab-engagements" tabindex="0"}
+
+## `r L$engagement_heading`
+
+```{r results='asis'}
+cat(render_operational_board(
+  engagements,
+  engagement_documents,
+  engagement_instruments,
+  docs,
+  site_lang
+))
+```
+
+```{=html}
+<noscript><style>.operation-brief[hidden]{display:grid}</style></noscript>
+<script>
+// The board expects operation dots with matching briefing articles. Native
+// links and all briefing content remain available without JavaScript; this
+// enhancement keeps only one detail fiche open at a time and filters the
+// validated engagement identities already encoded in the rendered markup.
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[data-operational-board]').forEach(board => {
+    const triggers = [...board.querySelectorAll('[data-operation-target]')];
+    const briefs = [...board.querySelectorAll('.operation-brief')];
+    const layers = [...board.querySelectorAll('[data-engagement-layer]')];
+    const connectors = [...board.querySelectorAll('.engagement-layer-link')];
+    const filters = [...board.querySelectorAll('[data-engagement-filter]')];
+    const allFilter = filters.find(filter => filter.dataset.engagementFilter === 'all');
+    const categoryFilters = filters.filter(filter => filter !== allFilter);
+    const briefsById = new Map(briefs.map(brief => [brief.id, brief]));
+    const briefHomes = new Map(briefs.map(brief => [brief, {
+      parent: brief.parentNode,
+      next: brief.nextSibling
+    }]));
+    const visiblePlotRect = () => {
+      const scrollRect = board.querySelector('.simple-timeline-scroll').getBoundingClientRect();
+      const trackRects = layers
+        .filter(layer => !layer.hidden)
+        .map(layer => layer.querySelector('.engagement-layer-track').getBoundingClientRect());
+      return {
+        top: Math.max(scrollRect.top, Math.min(...trackRects.map(rect => rect.top))),
+        right: Math.min(scrollRect.right, Math.max(...trackRects.map(rect => rect.right))),
+        bottom: Math.min(scrollRect.bottom, Math.max(...trackRects.map(rect => rect.bottom))),
+        left: Math.max(scrollRect.left, Math.min(...trackRects.map(rect => rect.left)))
+      };
+    };
+    const positionBrief = (brief, trigger) => {
+      const triggerRect = trigger.getBoundingClientRect();
+      const plotRect = visiblePlotRect();
+      const gap = 14;
+      const edge = 14;
+      const briefWidth = Math.min(640, window.innerWidth - (edge * 2));
+      brief.style.width = `${briefWidth}px`;
+      const briefRect = brief.getBoundingClientRect();
+      const centeredLeft = triggerRect.left + (triggerRect.width / 2) - (briefRect.width / 2);
+      const left = Math.max(edge, Math.min(
+        centeredLeft,
+        window.innerWidth - edge - briefRect.width
+      ));
+      const above = triggerRect.top - gap - briefRect.height;
+      const placeAbove = above >= plotRect.top + edge;
+      const preferredTop = placeAbove
+        ? above
+        : triggerRect.bottom + gap;
+      const top = Math.max(edge, Math.min(
+        preferredTop,
+        window.innerHeight - edge - briefRect.height
+      ));
+      brief.style.left = `${left}px`;
+      brief.style.top = `${top}px`;
+    };
+    const restoreBrief = brief => {
+      const home = briefHomes.get(brief);
+      if (brief.parentNode !== home.parent) {
+        const next = home.next?.parentNode === home.parent ? home.next : null;
+        home.parent.insertBefore(brief, next);
+      }
+      brief.classList.remove('is-viewport-overlay');
+      brief.style.removeProperty('left');
+      brief.style.removeProperty('top');
+      brief.style.removeProperty('width');
+      delete brief.dataset.positioning;
+    };
+    const closeAll = () => {
+      triggers.forEach(trigger => trigger.setAttribute('aria-expanded', 'false'));
+      briefs.forEach(brief => {
+        brief.hidden = true;
+        restoreBrief(brief);
+      });
+      board.classList.remove('has-selection');
+    };
+    triggers.forEach(trigger => trigger.addEventListener('click', () => {
+      const target = briefsById.get(trigger.dataset.operationTarget);
+      const wasOpen = trigger.getAttribute('aria-expanded') === 'true';
+      closeAll();
+      if (!wasOpen && target) {
+        trigger.setAttribute('aria-expanded', 'true');
+        document.body.appendChild(target);
+        target.classList.add('is-viewport-overlay');
+        target.dataset.positioning = 'true';
+        target.hidden = false;
+        board.classList.add('has-selection');
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          if (trigger.getAttribute('aria-expanded') !== 'true') return;
+          positionBrief(target, trigger);
+          delete target.dataset.positioning;
+          target.focus({ preventScroll: true });
+        }));
+      }
+    }));
+    board.querySelectorAll('[data-close-brief]').forEach(button => {
+      button.addEventListener('click', () => {
+        const openTrigger = triggers.find(trigger => trigger.getAttribute('aria-expanded') === 'true');
+        closeAll();
+        openTrigger?.focus();
+      });
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      const openTrigger = triggers.find(trigger => trigger.getAttribute('aria-expanded') === 'true');
+      if (!openTrigger) return;
+      closeAll();
+      openTrigger.focus();
+    });
+    const showAll = () => {
+      layers.forEach(layer => { layer.hidden = false; });
+      connectors.forEach(connector => { connector.hidden = false; });
+      filters.forEach(filter => {
+        const active = filter.dataset.engagementFilter === 'all';
+        filter.classList.toggle('is-active', active);
+        filter.setAttribute('aria-pressed', String(active));
+      });
+    };
+    filters.forEach(filter => filter.addEventListener('click', () => {
+      const category = filter.dataset.engagementFilter;
+      if (category === 'all') {
+        closeAll();
+        showAll();
+        return;
+      }
+      const showingAll = allFilter.getAttribute('aria-pressed') === 'true';
+      if (showingAll) {
+        categoryFilters.forEach(candidate => candidate.setAttribute('aria-pressed', 'false'));
+        filter.setAttribute('aria-pressed', 'true');
+      } else {
+        filter.setAttribute(
+          'aria-pressed',
+          String(filter.getAttribute('aria-pressed') !== 'true')
+        );
+      }
+      const activeCategories = categoryFilters
+        .filter(candidate => candidate.getAttribute('aria-pressed') === 'true')
+        .map(candidate => candidate.dataset.engagementFilter);
+      if (!activeCategories.length || activeCategories.length === categoryFilters.length) {
+        closeAll();
+        showAll();
+        return;
+      }
+      allFilter.setAttribute('aria-pressed', 'false');
+      filters.forEach(candidate => {
+        candidate.classList.toggle('is-active', candidate.getAttribute('aria-pressed') === 'true');
+      });
+      layers.forEach(layer => {
+        layer.hidden = !activeCategories.includes(layer.dataset.engagementLayer);
+      });
+      connectors.forEach(connector => {
+        const categories = connector.dataset.instrumentCategories.split('|');
+        const visibleRows = layers
+          .filter(layer => !layer.hidden)
+          .map(layer => layer.dataset.engagementLayer);
+        const linkedRows = categories
+          .filter(value => activeCategories.includes(value))
+          .map(value => visibleRows.indexOf(value) + 1)
+          .filter(index => index > 0);
+        connector.hidden = linkedRows.length < 2;
+        if (!connector.hidden) {
+          connector.style.setProperty('--link-top', `${(Math.min(...linkedRows) - 0.5) * 88}px`);
+          connector.style.setProperty('--link-height', `${(Math.max(...linkedRows) - Math.min(...linkedRows)) * 88}px`);
+        }
+      });
+      const openTrigger = triggers.find(trigger => trigger.getAttribute('aria-expanded') === 'true');
+      const openCategories = openTrigger?.closest('.simple-operation')
+        ?.dataset.instrumentCategories.split('|') ?? [];
+      if (openTrigger && !openCategories.some(value => activeCategories.includes(value))) closeAll();
+    }));
+    const requested = location.hash.slice(1);
+    const requestedTrigger = triggers.find(trigger => trigger.dataset.operationTarget === requested);
+    if (requestedTrigger) requestedTrigger.click();
+    let repositionFrame = null;
+    const repositionOpenBrief = () => {
+      if (repositionFrame !== null) return;
+      repositionFrame = requestAnimationFrame(() => {
+        repositionFrame = null;
+        const openTrigger = triggers.find(trigger => trigger.getAttribute('aria-expanded') === 'true');
+        if (!openTrigger) return;
+        const target = briefsById.get(openTrigger.dataset.operationTarget);
+        if (target) positionBrief(target, openTrigger);
+      });
+    };
+    window.addEventListener('resize', repositionOpenBrief);
+    window.addEventListener('scroll', repositionOpenBrief, true);
+  });
+});
+</script>
+```
+
+:::
+
+::: {#lens-panel-spatial .lens-panel role="tabpanel" aria-labelledby="lens-tab-spatial" tabindex="0" hidden="hidden"}
+
+```{r results='asis'}
+cat(render_spatial_constellation(spatial_review, doc_years, site_lang))
+```
+
+:::
+
+::: {#lens-panel-discourses .lens-panel role="tabpanel" aria-labelledby="lens-tab-discourses" tabindex="0" hidden="hidden"}
+
+## `r L$problematizations_heading`
+
+```{r}
+concept_years <- merge(con, doc_years, by.x = "id", by.y = "document_id")
+if (nrow(concept_years)) {
+  concept_years$period <- period_from_year(concept_years$year)
+  concept_counts <- aggregate(id ~ period + value, unique(concept_years[c("id", "period", "value")]), length)
+  names(concept_counts)[3] <- "count"
+  period_denominators <- aggregate(document_id ~ period, unique(transform(concept_denominator_years, period = period_from_year(year))[c("document_id", "period")]), length)
+  names(period_denominators)[2] <- "period_total"
+  complete_grid <- expand.grid(period = period_levels, value = unique(concept_years$value), stringsAsFactors = FALSE)
+  concept_counts <- merge(complete_grid, concept_counts, by = c("period", "value"), all.x = TRUE)
+  concept_counts <- merge(concept_counts, period_denominators, by = "period", all.x = TRUE)
+  concept_counts$count[is.na(concept_counts$count)] <- 0L
+  concept_counts$period_total[is.na(concept_counts$period_total)] <- 0L
+  concept_counts$percentage <- ifelse(concept_counts$period_total > 0, 100 * concept_counts$count / concept_counts$period_total, NA_real_)
+  concept_counts$period <- factor(concept_counts$period, levels = period_levels)
+  concept_counts$concept <- label_text(concept_counts$value)
+  concept_counts$tooltip <- ifelse(
+    concept_counts$period_total > 0,
+    paste0(L$concept, ": ", concept_counts$concept, "<br>", period_label, ": ", concept_counts$period, "<br>", L$documents, ": ", concept_counts$count, " / ", concept_counts$period_total, "<br>", sprintf("%.1f%%", concept_counts$percentage)),
+    paste0(L$concept, ": ", concept_counts$concept, "<br>", period_label, ": ", concept_counts$period, "<br>", L$no_dated_period)
+  )
+  p <- ggplot2::ggplot(concept_counts, ggplot2::aes(period, concept, fill = percentage,
+    text = tooltip)) +
+    ggplot2::geom_tile(colour = "#f8f6f1", linewidth = 0.7) +
+    ggplot2::scale_fill_gradient(low = "#eef3f5", high = navy) +
+    ggplot2::labs(x = NULL, y = L$analytical_concept, fill = "%") +
+    plot_theme
+  interactive_plot(p)
+} else empty_note(L$no_concepts)
+```
+
+```{r results='asis'}
+empty_periods <- setdiff(period_levels, as.character(period_denominators$period))
+if (length(empty_periods)) {
+  cat(sprintf('<p class="empty-period-note"><strong>%s</strong> — %s</p>', paste(empty_periods, collapse = ", "), L$no_dated_period))
+}
+cat(sprintf('<p class="chart-note">%s</p>', L$concept_percentage_note))
+```
+
+:::
+
+::: {#lens-panel-institutions .lens-panel role="tabpanel" aria-labelledby="lens-tab-institutions" tabindex="0" hidden="hidden"}
+
+## `r L$institutions_instruments_heading`
+
+```{r results='asis'}
+instrument_labels <- list(
+  en = c(military = "Military operation", police = "Police mission or training", defence = "Defence policy or strategy", parliament = "Parliamentary debate, evidence or report", development = "Development program or evaluation", diplomacy = "Diplomatic statement or readout", sanctions = "Sanction or regulation", finance = "Public-finance or expenditure instrument"),
+  fr = c(military = "Opération militaire", police = "Mission ou formation policière", defence = "Politique ou stratégie de défense", parliament = "Débat, témoignage ou rapport parlementaire", development = "Programme ou évaluation de développement", diplomacy = "Déclaration diplomatique ou compte rendu", sanctions = "Sanction ou règlement", finance = "Instrument de finances publiques ou de dépenses")
+)
+classify_instrument <- function(families, document_type, operation_name) {
+  family_values <- tolower(trimws(unlist(strsplit(ifelse(is.na(families), "", families), "\\|"))))
+  type <- tolower(ifelse(is.na(document_type), "", document_type))
+  if (present(operation_name) || type == "operation_record") return("military")
+  if ("rcmp" %in% family_values) return("police")
+  if ("defence_policy" %in% family_values) return("defence")
+  if ("parliament" %in% family_values) return("parliament")
+  if ("development" %in% family_values) return("development")
+  if ("sanctions" %in% family_values || type == "regulation") return("sanctions")
+  if ("public_finance" %in% family_values) return("finance")
+  if (any(family_values %in% c("statements", "regional_strategy")) || type %in% c("statement", "speech", "readout", "news_release")) return("diplomacy")
+  ""
+}
+instrument_docs <- analytical_docs[!duplicated(analytical_docs$document_id), c("document_id", "institution", "families", "document_type", "operation_name"), drop = FALSE]
+instrument_docs$instrument <- mapply(classify_instrument, instrument_docs$families, instrument_docs$document_type, instrument_docs$operation_name, USE.NAMES = FALSE)
+instrument_docs <- merge(instrument_docs[present(instrument_docs$institution) & present(instrument_docs$instrument), ], doc_years, by = "document_id", all.x = TRUE)
+instrument_docs$period <- as.character(period_from_year(instrument_docs$year))
+matrix_periods <- c(L$full_period, period_levels)
+matrix_keys <- c("all", period_levels)
+cat(sprintf('<div class="instrument-matrix" data-instrument-matrix><label><span>%s</span><select class="form-select" data-matrix-period>', L$selected_period))
+cat(paste(sprintf('<option value="matrix-%d">%s</option>', seq_along(matrix_periods), matrix_periods), collapse = ""))
+cat('</select></label>')
+for (period_index in seq_along(matrix_keys)) {
+  key <- matrix_keys[period_index]
+  subset <- if (key == "all") instrument_docs else instrument_docs[!is.na(instrument_docs$period) & instrument_docs$period == key, , drop = FALSE]
+  counts <- if (nrow(subset)) aggregate(document_id ~ institution + instrument, unique(subset[c("document_id", "institution", "instrument")]), length) else data.frame(institution = character(), instrument = character(), document_id = integer())
+  names(counts)[3] <- "count"
+  institutions <- sort(unique(instrument_docs$institution))
+  instruments <- names(instrument_labels[[site_lang]])
+  maximum <- if (nrow(counts)) max(counts$count) else 1
+  cat(sprintf('<div class="instrument-matrix-panel" id="matrix-%d"%s>', period_index, if (period_index == 1) "" else " hidden"))
+  if (!nrow(subset) && key != "all") {
+    cat(sprintf('<p class="empty-state">%s</p></div>', L$no_dated_period))
+    next
+  }
+  cat(sprintf('<div class="matrix-scroll"><table><thead><tr><th>%s</th>', L$institution))
+  cat(paste(sprintf('<th>%s</th>', instrument_labels[[site_lang]][instruments]), collapse = ""), '</tr></thead><tbody>')
+  for (institution in institutions) {
+    institution_label <- localized_institution(institution, site_lang)
+    cat(sprintf('<tr><th>%s</th>', institution_label))
+    for (instrument in instruments) {
+      matched <- counts$count[counts$institution == institution & counts$instrument == instrument]
+      count <- if (length(matched)) matched[1] else 0L
+      tooltip <- sprintf('%s: %s; %s: %s; %s: %s; %s: %d', L$institution, institution_label, L$instrument, instrument_labels[[site_lang]][instrument], L$selected_period, matrix_periods[period_index], L$documents, count)
+      cat(sprintf('<td style="--cell-level:%.3f" title="%s"><span>%d</span></td>', count / maximum, tooltip, count))
+    }
+    cat('</tr>')
+  }
+  cat('</tbody></table></div></div>')
+}
+cat('</div>')
+```
+
+:::
+
+:::
+
+::: {.about-corpus}
+```{r results='asis'}
+cat(sprintf('<button type="button" class="about-corpus-toggle" aria-expanded="false" aria-controls="about-corpus-content" data-about-corpus-toggle>%s</button>', L$about_corpus))
+```
+
+::: {#about-corpus-content .about-corpus-content}
+```{r results='asis'}
+cat(sprintf('<p class="chart-note">%s</p>', L$corpus_composition_note))
+```
+
 ## `r L$documents_over_time`
 
 ```{r}
-#| fig-width: 12
-#| out-width: 100%
 if (nrow(doc_years)) {
   year_counts <- aggregate(document_id ~ year, doc_years, length)
   names(year_counts)[2] <- "count"
   p <- ggplot2::ggplot(year_counts, ggplot2::aes(year, count, text = paste0(L$year, ": ", year, "<br>", L$documents, ": ", count))) +
-    ggplot2::geom_col(fill = navy, width = 0.72) +
-    ggplot2::scale_x_continuous(breaks = scales::breaks_pretty()) +
-    ggplot2::labs(x = NULL, y = L$documents) +
-    plot_theme
+    ggplot2::geom_col(fill = navy, width = 0.72) + ggplot2::labs(x = NULL, y = L$documents) + plot_theme
   interactive_plot(p)
 } else empty_note(L$no_dated)
 ```
 
-::: {.dashboard-grid}
-::: {.dashboard-panel}
-## `r L$families_over_time`
-
-```{r}
-family_years <- merge(fam, doc_years, by.x = "id", by.y = "document_id")
-if (nrow(family_years)) {
-  family_counts <- aggregate(id ~ year + value, family_years, length)
-  names(family_counts)[3] <- "count"
-  family_counts$family <- label_text(family_counts$value)
-  p <- ggplot2::ggplot(family_counts, ggplot2::aes(year, count, colour = family, group = family,
-    text = paste0(L$year, ": ", year, "<br>", L$family, ": ", family, "<br>", L$documents, ": ", count))) +
-    ggplot2::geom_line(linewidth = 0.8) +
-    ggplot2::geom_point(size = 1.8) +
-    ggplot2::scale_colour_manual(values = rep(c(navy, blue, red, "#73808a", "#8a7553", "#55766a"), length.out = length(unique(family_counts$family)))) +
-    ggplot2::scale_x_continuous(breaks = scales::breaks_pretty()) +
-    ggplot2::labs(x = NULL, y = L$documents, colour = L$document_family) +
-    plot_theme
-  interactive_plot(p)
-} else empty_note(L$no_families)
-```
-:::
-
-::: {.dashboard-panel}
 ## `r L$documents_by_institution`
 
 ```{r}
 if (nrow(doc_institutions)) {
   institution_counts <- aggregate(document_id ~ institution, doc_institutions, length)
   names(institution_counts)[2] <- "count"
-  p <- ggplot2::ggplot(institution_counts, ggplot2::aes(x = reorder(institution, count), y = count,
-    text = paste0(L$institution, ": ", institution, "<br>", L$documents, ": ", count))) +
-    ggplot2::geom_col(fill = navy, width = 0.68) +
-    ggplot2::coord_flip() +
-    ggplot2::labs(x = NULL, y = L$documents) +
-    plot_theme
+  p <- ggplot2::ggplot(institution_counts, ggplot2::aes(reorder(institution, count), count, text = paste0(L$institution, ": ", institution, "<br>", L$documents, ": ", count))) +
+    ggplot2::geom_col(fill = navy, width = 0.68) + ggplot2::coord_flip() + ggplot2::labs(x = NULL, y = L$documents) + plot_theme
   interactive_plot(p)
 } else empty_note(L$no_institutions)
 ```
-:::
-:::
 
 ## `r L$language_availability`
 
 ```{r}
 language_docs <- unique(analytical_docs[present(analytical_docs$language), c("document_id", "language"), drop = FALSE])
-if (nrow(language_docs)) {
-  language_docs$language_label <- ifelse(tolower(language_docs$language) == "en", L$english, ifelse(tolower(language_docs$language) == "fr", L$french, label_text(language_docs$language)))
-  language_counts <- aggregate(document_id ~ language_label, language_docs, length)
-  names(language_counts) <- c("language", "count")
-  language_counts$availability <- ifelse(language_counts$language == L$english, L$available_english, L$available_french)
-  p <- ggplot2::ggplot(language_counts, ggplot2::aes(availability, count, fill = language,
-    text = paste0(availability, ": ", count))) +
-    ggplot2::geom_col(width = 0.58, show.legend = FALSE) +
-    ggplot2::scale_fill_manual(values = setNames(c(navy, red), c(L$english, L$french)), na.value = blue) +
-    ggplot2::labs(x = NULL, y = L$documents) +
-    plot_theme
-  interactive_plot(p)
-} else empty_note(L$no_languages)
-```
-
-```{r results='asis'}
-cat(sprintf('<p class="chart-note">%s</p>', L$language_note))
-```
-
-::: {.dashboard-grid}
-::: {.dashboard-panel}
-## `r L$concepts_over_time`
-
-```{r}
-concept_years <- merge(con, doc_years, by.x = "id", by.y = "document_id")
-if (nrow(concept_years)) {
-  concept_counts <- aggregate(id ~ year + value, concept_years, length)
-  names(concept_counts)[3] <- "count"
-  concept_counts$concept <- label_text(concept_counts$value)
-  concept_colours <- rep(c(navy, blue, red, "#73808a", "#8a7553", "#55766a"), length.out = length(unique(concept_counts$concept)))
-  p <- ggplot2::ggplot(concept_counts, ggplot2::aes(year, count, colour = concept, group = concept,
-    text = paste0(L$year, ": ", year, "<br>", L$concept, ": ", concept, "<br>", L$documents, ": ", count))) +
-    ggplot2::geom_line(linewidth = 0.85) +
-    ggplot2::geom_point(size = 1.8) +
-    ggplot2::scale_colour_manual(values = concept_colours) +
-    ggplot2::scale_x_continuous(breaks = scales::breaks_pretty()) +
-    ggplot2::labs(x = NULL, y = L$documents, colour = L$analytical_concept) +
-    plot_theme
-  interactive_plot(p)
-} else empty_note(L$no_concepts)
-```
-:::
-
-::: {.dashboard-panel}
-## `r L$family_by_concept`
-
-```{r}
-if (nrow(fam) && nrow(con)) {
-  pairs <- merge(fam, con, by = "id")
-  counts <- aggregate(id ~ value.x + value.y, unique(pairs), length)
-  names(counts)[3] <- "count"
-  if (nrow(counts)) {
-    counts$concept <- label_text(counts$value.y)
-    counts$family <- label_text(counts$value.x)
-    p <- ggplot2::ggplot(counts, ggplot2::aes(concept, family, fill = count,
-      text = paste0(L$family, ": ", family, "<br>", L$concept, ": ", concept, "<br>", L$documents, ": ", count))) +
-      ggplot2::geom_tile(colour = "#f8f6f1", linewidth = 0.7) +
-      ggplot2::scale_fill_gradient(low = "#dce7ed", high = navy) +
-      ggplot2::labs(x = L$analytical_concept, y = L$document_family, fill = L$documents) +
-      plot_theme +
-      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 35, hjust = 1))
-    interactive_plot(p)
-  } else empty_note(L$no_pairs)
-} else empty_note(L$no_pairs)
+language_docs$language_label <- ifelse(tolower(language_docs$language) == "en", L$english, ifelse(tolower(language_docs$language) == "fr", L$french, label_text(language_docs$language)))
+language_counts <- aggregate(document_id ~ language_label, language_docs, length)
+names(language_counts) <- c("language", "count")
+p <- ggplot2::ggplot(language_counts, ggplot2::aes(language, count, fill = language, text = paste0(language, ": ", count))) +
+  ggplot2::geom_col(width = 0.58, show.legend = FALSE) + ggplot2::scale_fill_manual(values = setNames(c(navy, red), c(L$english, L$french)), na.value = blue) + ggplot2::labs(x = NULL, y = L$documents) + plot_theme
+interactive_plot(p)
 ```
 :::
 :::
+
+```{=html}
+<script>
+// Period controls swap precomputed matrices; corpus-description charts remain
+// readable without JavaScript and are collapsed only after enhancement.
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[data-analytical-lenses]').forEach(component => {
+    const tabs = [...component.querySelectorAll('.lens-tabs > [role="tab"]')];
+    const panels = [...component.querySelectorAll(':scope > .lens-panel')];
+    const refreshSpatialPanel = panel => {
+      const periodPanel = panel?.querySelector('[data-spatial-period-panel]:not([hidden])');
+      const svg = periodPanel?.querySelector('.spatial-schematic');
+      if (!svg) return;
+      const width = Math.max(periodPanel.clientWidth, 1);
+      svg.setAttribute('viewBox', '0 0 900 540');
+      svg.style.height = `${width * 540 / 900}px`;
+      svg.getBoundingClientRect();
+    };
+    const activateTab = (tab, moveFocus = false) => {
+      tabs.forEach(candidate => {
+        const active = candidate === tab;
+        candidate.setAttribute('aria-selected', String(active));
+        candidate.tabIndex = active ? 0 : -1;
+      });
+      const activePanel = panels.find(panel => panel.id === tab.getAttribute('aria-controls'));
+      panels.forEach(panel => { panel.hidden = panel !== activePanel; });
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        refreshSpatialPanel(activePanel);
+        window.dispatchEvent(new Event('resize'));
+      }));
+      if (moveFocus) tab.focus();
+    };
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => activateTab(tab));
+      tab.addEventListener('keydown', event => {
+        let targetIndex = null;
+        if (event.key === 'ArrowRight' || event.key === 'ArrowDown') targetIndex = (index + 1) % tabs.length;
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') targetIndex = (index - 1 + tabs.length) % tabs.length;
+        if (event.key === 'Home') targetIndex = 0;
+        if (event.key === 'End') targetIndex = tabs.length - 1;
+        if (targetIndex !== null) {
+          event.preventDefault();
+          activateTab(tabs[targetIndex], true);
+        } else if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          activateTab(tab, true);
+        }
+      });
+    });
+  });
+
+  const setSpatialFilter = target => {
+    const rawIds = target?.dataset.spatialDocuments ?? null;
+    window.corpusSpatialDocumentIds = rawIds === null
+      ? null
+      : new Set(rawIds.split('|').filter(Boolean));
+    const constellation = target?.closest('[data-spatial-constellation]') ?? document.querySelector('[data-spatial-constellation]');
+    const status = constellation?.querySelector('[data-spatial-selection]');
+    if (status && target) status.textContent = target.dataset.spatialInfo;
+    constellation?.querySelectorAll('[data-spatial-filter]').forEach(candidate => {
+      candidate.classList.toggle('is-selected', candidate === target);
+      candidate.setAttribute('aria-pressed', String(candidate === target));
+    });
+    window.dispatchEvent(new CustomEvent('corpus-spatial-filter'));
+  };
+  document.querySelectorAll('[data-spatial-constellation]').forEach(constellation => {
+    const selector = constellation.querySelector('[data-spatial-period]');
+    const panels = [...constellation.querySelectorAll('[data-spatial-period-panel]')];
+    const reset = constellation.querySelector('[data-spatial-reset]');
+    const defaultStatus = constellation.querySelector('[data-spatial-selection]')?.textContent;
+    selector?.addEventListener('change', () => {
+      panels.forEach(panel => { panel.hidden = panel.id !== selector.value; });
+      setSpatialFilter(null);
+      const status = constellation.querySelector('[data-spatial-selection]');
+      if (status) status.textContent = defaultStatus;
+    });
+    constellation.querySelectorAll('[data-spatial-filter]').forEach(target => {
+      target.setAttribute('aria-pressed', 'false');
+      target.addEventListener('click', () => setSpatialFilter(target));
+      if (target.tagName.toLowerCase() === 'g') {
+        target.addEventListener('keydown', event => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          setSpatialFilter(target);
+        });
+      }
+    });
+    reset?.addEventListener('click', () => {
+      setSpatialFilter(null);
+      const status = constellation.querySelector('[data-spatial-selection]');
+      if (status) status.textContent = defaultStatus;
+    });
+  });
+
+  document.querySelectorAll('[data-instrument-matrix]').forEach(matrix => {
+    const selector = matrix.querySelector('[data-matrix-period]');
+    const panels = [...matrix.querySelectorAll('.instrument-matrix-panel')];
+    selector?.addEventListener('change', () => {
+      panels.forEach(panel => { panel.hidden = panel.id !== selector.value; });
+    });
+  });
+  const toggle = document.querySelector('[data-about-corpus-toggle]');
+  const content = document.querySelector('#about-corpus-content');
+  if (toggle && content) {
+    content.hidden = true;
+    toggle.setAttribute('aria-label', toggle.textContent);
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      content.hidden = expanded;
+    });
+  }
+});
+</script>
+```
 
 ## `r L$explore`
 
@@ -259,7 +665,8 @@ if (nrow(docs)) {
     family_raw <- collapse_unique(d$families)
     family <- collapse_unique(unlist(strsplit(paste(d$families[present(d$families)], collapse = "|"), "\\|")), label_text)
     type <- collapse_unique(d$document_type, label_text)
-    concept_values <- unique(trimws(unlist(strsplit(paste(d$matched_concepts[present(d$matched_concepts)], collapse = "|"), "\\|"))))
+    confirmed_values <- d$matched_concepts[d$concept_coding_state == "confirmed" & present(d$matched_concepts)]
+    concept_values <- unique(trimws(unlist(strsplit(paste(confirmed_values, collapse = "|"), "\\|"))))
     concept_values <- concept_values[nzchar(concept_values)]
     concepts <- paste(label_text(concept_values), collapse = " | ")
     preferred_title <- d$title[present(d$language) & tolower(d$language) == site_lang & present(d$title)]
@@ -281,8 +688,8 @@ if (nrow(docs)) {
       links[j] <- if (present(d$document_url[j])) sprintf('<a href="%s" class="official-link" target="_blank" rel="noopener noreferrer" aria-label="%s">%s</a>', esc(d$document_url[j]), esc(aria), esc(language)) else ""
     }
     search_text <- paste(all_titles, institution, family, type, concepts, formats, collapse = " ")
-    cat(sprintf('<tbody class="document-group" data-year="%s" data-institution="%s" data-family="%s" data-concept="%s" data-search="%s"><tr><td>%s</td><td class="document-title">%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td class="official-links">%s</td></tr>',
-      esc(year), esc(institution), esc(family_raw), esc(paste(concept_values, collapse = "|")), esc(search_text), esc(year), esc(title), esc(institution), esc(family), esc(type), esc(concepts), esc(if (nzchar(formats)) formats else "—"), date_text, paste(links[nzchar(links)], collapse = " ")))
+    cat(sprintf('<tbody class="document-group" data-document-id="%s" data-year="%s" data-institution="%s" data-family="%s" data-concept="%s" data-search="%s"><tr><td>%s</td><td class="document-title">%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td class="official-links">%s</td></tr>',
+      esc(id), esc(year), esc(institution), esc(family_raw), esc(paste(concept_values, collapse = "|")), esc(search_text), esc(year), esc(title), esc(institution), esc(family), esc(type), esc(concepts), esc(if (nzchar(formats)) formats else "—"), date_text, paste(links[nzchar(links)], collapse = " ")))
     cat('</tbody>')
   }
   cat(sprintf('</table><p id="no-results" class="empty-state" hidden>%s</p></div>', L$no_matches))
@@ -304,6 +711,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let visible = 0;
     groups.forEach(group => {
       let show = `${group.textContent} ${group.dataset.search || ''}`.toLowerCase().includes(query);
+      const spatialIds = window.corpusSpatialDocumentIds;
+      if (spatialIds !== null && spatialIds !== undefined) {
+        show = show && spatialIds.has(group.dataset.documentId);
+      }
       document.querySelectorAll('[id^="f-"]').forEach(select => {
         if (!select.value) return;
         const key = select.id.slice(2);
@@ -316,6 +727,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (noResults) noResults.hidden = visible > 0;
   };
   controls.forEach(control => control.addEventListener('input', apply));
+  window.addEventListener('corpus-spatial-filter', apply);
 });
 </script>
 ```

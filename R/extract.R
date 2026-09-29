@@ -96,6 +96,23 @@ first_match <- function(pattern, text) {
   if (length(m) && nzchar(m)) m else NA_character_
 }
 
+parse_month_year <- function(value) {
+  if (is.na(value) || !nzchar(value)) return(NA_character_)
+  normalized <- tolower(iconv(value, from = "UTF-8", to = "ASCII//TRANSLIT"))
+  month <- c(
+    january = 1L, february = 2L, march = 3L, april = 4L, may = 5L,
+    june = 6L, july = 7L, august = 8L, september = 9L, october = 10L,
+    november = 11L, december = 12L, janvier = 1L, fevrier = 2L,
+    mars = 3L, avril = 4L, mai = 5L, juin = 6L, juillet = 7L,
+    aout = 8L, septembre = 9L, octobre = 10L, novembre = 11L,
+    decembre = 12L
+  )
+  name <- first_match("[a-z]+", normalized)
+  year <- first_match("(?:19|20)\\d{2}", normalized)
+  if (is.na(name) || is.na(year) || is.na(month[[name]])) return(NA_character_)
+  sprintf("%s-%02d-01", year, month[[name]])
+}
+
 extract_date_metadata <- function(text, url, source_id) {
   page_raw <- first_match("(?:Page details|Page Details )?(?:Date modified: ?|Date de modification: ?)?[^0-9]*(20\\d{2}-\\d{2}-\\d{2})$", text)
   if (is.na(page_raw)) page_raw <- first_match("(?:Page details|Page Details Date modified:|Date modified:|Date de modification:)[^0-9]*(20\\d{2}-\\d{2}-\\d{2})", text)
@@ -167,6 +184,11 @@ extract_date_metadata <- function(text, url, source_id) {
   } else if (source_id %in% c("gac_news", "gac_sanctions")) {
     raw <- first_match("(January|February|March|April|May|June|July|August|September|October|November|December) +[0-9]{1,2}, +20\\d{2} *(?:[–-])", substr(text, 1, 2000))
     if (!is.na(raw)) publication <- parse_english_date(trimws(sub("[–-].*$", "", raw)))
+    if (is.na(publication)) {
+      raw <- first_match("(January|February|March|April|May|June|July|August|September|October|November|December) +[0-9]{1,2}, +20\\d{2}",
+                         substr(text, 1, 4000))
+      if (!is.na(raw)) publication <- parse_english_date(raw)
+    }
   } else if (grepl("^historical_", source_id)) {
     candidate <- extract_date(text, url = url)
     if (!is.na(candidate)) publication <- candidate
@@ -176,6 +198,40 @@ extract_date_metadata <- function(text, url, source_id) {
     if (!is.na(authoritative) && nzchar(authoritative)) publication <- authoritative
   }
   analysis_date <- if (!is.na(event_start)) event_start else if (!is.na(publication)) publication else page_modified
+  date_source_override <- NA_character_
+  if (source_id == "gac_news" && is.na(publication) &&
+      grepl("/news/archive/20\\d{2}/[01]\\d/", url)) {
+    archive_year <- first_match("20\\d{2}",
+                                first_match("/news/archive/20\\d{2}/", url))
+    analysis_date <- paste0(archive_year, "-01-01")
+    date_source_override <- "official archive year; exact publication day unavailable"
+  }
+  if (source_id == "public_finance_index" && is.na(publication)) {
+    url_date <- first_match("20\\d{2}-[01]\\d-[0-3]\\d",
+                            first_match("/20\\d{2}-[01]\\d-[0-3]\\d-", url))
+    if (!is.na(url_date)) {
+      publication <- url_date
+      analysis_date <- publication
+      date_source_override <- "official document URL date"
+    }
+  }
+  if (source_id == "defence_policy_index" && is.na(publication)) {
+    policy_year <- first_match(
+      "1994|2005|2024",
+      defence_policy_document_key(url)
+    )
+    if (!is.na(policy_year)) {
+      analysis_date <- paste0(policy_year, "-01-01")
+      date_source_override <- paste(
+        "official policy year; exact publication day unavailable"
+      )
+    }
+  }
+  if (source_id == "rcmp_publications" && is.na(publication) &&
+      grepl("2024-25-cpa-ipp-annual-report", url, ignore.case = TRUE)) {
+    analysis_date <- "2025-01-01"
+    date_source_override <- "official report period ending 2025; exact publication day unavailable"
+  }
   if (source_id %in% c("parliament", "historical_parliament") && exists("year_month", inherits = FALSE) && is.na(analysis_date)) {
     yr <- first_match("20\\d{2}", year_month)
     analysis_date <- paste0(yr, "-01-01")
@@ -183,7 +239,7 @@ extract_date_metadata <- function(text, url, source_id) {
   list(publication_date = publication, page_last_modified = page_modified,
        event_start_date = event_start, event_end_date = event_end,
        year = suppressWarnings(as.integer(substr(analysis_date, 1, 4))),
-       date_source = if (!is.na(event_start)) "event_start_date" else if (!is.na(publication)) "publication_date" else if (source_id %in% c("parliament", "historical_parliament") && exists("year_month", inherits = FALSE)) paste0("official report month: ", year_month, "; exact day uncertain") else if (!is.na(page_modified)) "page_last_modified; publication date uncertain" else "uncertain")
+       date_source = if (!is.na(date_source_override)) date_source_override else if (!is.na(event_start)) "event_start_date" else if (!is.na(publication)) "publication_date" else if (source_id %in% c("parliament", "historical_parliament") && exists("year_month", inherits = FALSE)) paste0("official report month: ", year_month, "; exact day uncertain") else if (!is.na(page_modified)) "page_last_modified; publication date uncertain" else "uncertain")
 }
 
 parliament_metadata <- function(title, text, url, language) {
@@ -193,10 +249,21 @@ parliament_metadata <- function(title, text, url, language) {
   debate <- identical(known_type, "house_debate") || grepl("/hansard|/debats|/Debates/|debates_", url, ignore.case = TRUE)
   journal <- identical(known_type, "house_journal") || grepl("/journals|/journaux|/Journals/|journals_", url, ignore.case = TRUE)
   if (report) {
-    raw <- clean_space(strsplit(substr(text, 1, 800), "Report of|Rapport du", fixed = FALSE)[[1]][1])
-    raw <- gsub("\\s+", " ", raw)
-    if (nzchar(raw)) title <- tools::toTitleCase(tolower(raw))
-    return(list(title = title, document_type = "committee_report"))
+    front <- clean_space(substr(text, 1, 3000))
+    match <- regexec(
+      "(?is)(?:Next Page|Page suivante)\\s+(?:HOUSE OF COMMONS\\s+CANADA\\s+|CHAMBRE DES COMMUNES\\s+CANADA\\s+)?(.+?)\\s+(?:Report of|Rapport du)",
+      front,
+      perl = TRUE
+    )
+    parts <- regmatches(front, match)[[1]]
+    if (length(parts) >= 2L) title <- clean_space(parts[2])
+    title <- gsub("^(?:HOUSE OF COMMONS|CHAMBRE DES COMMUNES)\\s+CANADA\\s+", "", title, ignore.case = TRUE)
+    title <- tools::toTitleCase(tolower(title))
+    report_month <- first_match(
+      "(?:JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER|JANVIER|FÉVRIER|MARS|AVRIL|MAI|JUIN|JUILLET|AOÛT|SEPTEMBRE|OCTOBRE|NOVEMBRE|DÉCEMBRE) +(?:19|20)\\d{2}",
+      front
+    )
+    return(list(title = title, document_type = "committee_report", report_month = report_month))
   }
   if (evidence) {
     committee <- first_match("(?:Standing Committee on|Comité permanent (?:des|de la|du|de l’|de l')) [A-Za-zÀ-ÿ ’'–—-]+?(?= +(?:NUMBER|NUMÉRO|EVIDENCE|TÉMOIGNAGES))", text)
@@ -205,7 +272,7 @@ parliament_metadata <- function(title, text, url, language) {
       kind <- if (language == "fr") "Témoignages" else "Evidence"
       title <- paste(kind, "—", committee, "—", number)
     }
-    return(list(title = title, document_type = "committee_evidence"))
+    return(list(title = title, document_type = "committee_evidence", report_month = NA_character_))
   }
   publication_title <- function(kind) {
     sitting <- first_match("(?:sitting-|seance-|/(?:Debates|Journals)/)([0-9]+)", url)
@@ -218,9 +285,9 @@ parliament_metadata <- function(title, text, url, language) {
     number_label <- if (language == "fr") " no " else " No. "
     paste0(label, if (!is.na(sitting)) paste0(number_label, as.integer(sitting)) else "", " — ", date)
   }
-  if (debate) return(list(title = publication_title("house_debate"), document_type = "house_debate"))
-  if (journal) return(list(title = publication_title("house_journal"), document_type = "house_journal"))
-  list(title = title, document_type = "parliamentary_document")
+  if (debate) return(list(title = publication_title("house_debate"), document_type = "house_debate", report_month = NA_character_))
+  if (journal) return(list(title = publication_title("house_journal"), document_type = "house_journal", report_month = NA_character_))
+  list(title = title, document_type = "parliamentary_document", report_month = NA_character_)
 }
 
 historical_parliament_metadata <- function(text, url) {
@@ -251,6 +318,22 @@ defence_operation_metadata <- function(title, text, url) {
        title = paste0(operation_name, if (nzchar(phase)) paste0(" (", phase, ")") else ""))
 }
 
+observable_document_type <- function(title, url = "", fallback = "official_publication") {
+  evidence <- paste(title, url)
+  if (grepl("evaluation|évaluation", evidence, ignore.case = TRUE)) return("program_evaluation")
+  if (grepl("implementation (plan|report)|plan de mise en œuvre|rapport de mise en œuvre",
+            evidence, ignore.case = TRUE)) return("implementation_report")
+  if (grepl("annual report|rapport annuel", evidence, ignore.case = TRUE)) return("annual_report")
+  if (grepl("departmental (results|performance) report|rapport (sur les résultats|ministériel sur le rendement)",
+            evidence, ignore.case = TRUE)) return("departmental_report")
+  if (grepl("\\b(training|formation|course|cours)\\b", evidence,
+            ignore.case = TRUE, perl = TRUE)) return("training_record")
+  if (grepl("public accounts|comptes publics", evidence, ignore.case = TRUE)) return("public_accounts")
+  if (grepl("supplementary estimates|budget supplémentaire des dépenses", evidence,
+            ignore.case = TRUE)) return("supplementary_estimates")
+  fallback
+}
+
 derive_document_metadata <- function(title, text, url, source) {
   host <- tolower(httr2::url_parse(url)$hostname %||% "")
   if (source$source_id %in% c("parliament", "historical_parliament")) {
@@ -266,7 +349,8 @@ derive_document_metadata <- function(title, text, url, source) {
   if (grepl("international.gc.ca$", host) && grepl("stories-histoires", url))
     return(list(institution = "Global Affairs Canada", families = "development", document_type = "project_story"))
   if (source$source_id == "gac_news") {
-    kind <- if (grepl("\\bStatement\\b", substr(text, 1, 500), ignore.case = TRUE)) "statement" else "news_release"
+    kind <- if (grepl("\\bStatement\\b", title, ignore.case = TRUE)) "statement" else
+      if (grepl("address|remarks|discours|allocution", title, ignore.case = TRUE)) "speech" else "news_release"
     substantive <- if (grepl("sanction", title, ignore.case = TRUE)) "sanctions" else if (grepl("funding|assistance|aid", title, ignore.case = TRUE)) "development" else character()
     return(list(institution = "Global Affairs Canada", families = paste(c("statements", substantive), collapse = "|"), document_type = kind))
   }
@@ -294,18 +378,37 @@ derive_document_metadata <- function(title, text, url, source) {
   if (source$source_id == "historical_diplomacy")
     return(list(institution = "External Affairs / Global Affairs Canada", families = classify_families(paste(title, text), "", safe_read_csv("config/families.csv")), document_type = if (grepl("speech|address|statement|discours|déclaration", title, ignore.case=TRUE)) "statement" else "official_publication"))
   if (source$source_id == "historical_development")
-    return(list(institution = "Canadian International Development Agency", families = classify_families(paste(title, text), "", safe_read_csv("config/families.csv")), document_type = "official_publication"))
+    return(list(institution = "Canadian International Development Agency", families = classify_families(paste(title, text), "", safe_read_csv("config/families.csv")), document_type = observable_document_type(title, url)))
   if (source$source_id == "historical_police")
-    return(list(institution = "Royal Canadian Mounted Police / Government of Canada", families = classify_families(paste(title, text), "", safe_read_csv("config/families.csv")), document_type = "police_program_document"))
+    return(list(institution = "Royal Canadian Mounted Police / Government of Canada", families = classify_families(paste(title, text), "", safe_read_csv("config/families.csv")), document_type = observable_document_type(title, url, "mission_record")))
   if (source$source_id == "historical_sanctions")
     return(list(institution = source$institution, families = classify_families(paste(title, text), "", safe_read_csv("config/families.csv")), document_type = "regulation_or_notice"))
   if (source$source_id == "defence_policy_index") {
-    ok <- grepl("defen[cs]e policy|white paper|livre blanc|politique de défense|our north,? strong and free|strong,? secure,? engaged", title, ignore.case = TRUE)
-    return(list(institution = "National Defence", families = if (ok) "defence_policy" else "", document_type = if (ok) "defence_policy" else "other"))
+    implementation <- grepl("defen[cs]e plan|plan de la défense|implementation",
+                            title, ignore.case = TRUE)
+    policy <- grepl(
+      "defen[cs]e policy|white paper|livre blanc|politique de défense|our north,? strong and free|notre nord,? fort et libre|strong,? secure,? engaged|protection,? sécurité,? engagement",
+      title, ignore.case = TRUE
+    )
+    policy <- policy || grepl(
+      "white_paper:1994|international_policy_statement_defence:2005|our_north_strong_and_free:2024",
+      defence_policy_document_key(url)
+    )
+    ok <- policy || implementation
+    kind <- if (implementation) {
+      "defence_policy_implementation_plan"
+    } else if (policy) {
+      "defence_policy"
+    } else {
+      "other"
+    }
+    return(list(institution = "National Defence",
+                families = if (ok) "defence_policy" else "",
+                document_type = kind))
   }
   if (source$source_id == "rcmp_publications") {
     ok <- grepl("international police|police peacekeeping|peace operations|police mission|missions? de police|maintien de la paix", paste(title, substr(text, 1, 12000)), ignore.case = TRUE)
-    return(list(institution = "Royal Canadian Mounted Police", families = if (ok) "rcmp" else "", document_type = if (ok) "police_program_document" else "other"))
+    return(list(institution = "Royal Canadian Mounted Police", families = if (ok) "rcmp" else "", document_type = if (ok) observable_document_type(title, url, "mission_record") else "other"))
   }
   if (source$source_id == "regional_strategy_index") {
     ok <- grepl("strategy|strategic partnership|stratégie|partenariat stratégique", title, ignore.case = TRUE)
@@ -313,7 +416,8 @@ derive_document_metadata <- function(title, text, url, source) {
   }
   if (source$source_id == "public_finance_index") {
     ok <- grepl("budget|estimates|public accounts|budget des dépenses|comptes publics", title, ignore.case = TRUE)
-    return(list(institution = source$institution, families = if (ok) "public_finance" else "", document_type = if (ok) "public_finance_document" else "other"))
+    issuer <- if (grepl("international\\.(gc|canada)\\.ca$", host)) "Global Affairs Canada" else source$institution
+    return(list(institution = issuer, families = if (ok) "public_finance" else "", document_type = if (ok) observable_document_type(title, url, "expenditure_document") else "other"))
   }
   detected <- classify_families(paste(title, text), "", safe_read_csv("config/families.csv"))
   list(institution = source$institution, families = detected, document_type = if (grepl("report", title, ignore.case=TRUE)) "report" else if (grepl("policy|politique", title, ignore.case=TRUE)) "policy" else if (grepl("budget|estimates|comptes publics", title, ignore.case=TRUE)) "public_finance_document" else "other")
@@ -341,9 +445,150 @@ language_of <- function(text) {
   if (fr > en * 1.25) "fr" else if (en > fr * 1.25) "en" else "bilingual_or_uncertain"
 }
 
-code_terms <- function(text, terms) {
-  n <- vapply(terms$pattern, function(p) { m <- gregexpr(p, text, ignore.case = TRUE, perl = TRUE)[[1]]; if (m[1] == -1) 0L else length(m) }, integer(1))
-  paste(terms$term_id[n > 0], collapse = "|")
+normalize_concept_pattern <- function(pattern) {
+  # CSV preserves the two characters in `\\b`; PCRE needs a single
+  # backslash for word boundaries and other escaped operators.
+  gsub("\\\\\\\\", "\\\\", pattern)
+}
+
+haiti_reference_pattern <- function() {
+  "\\b(Ha[iï]ti|Haitians?|Ha[iï]tiens?|Ha[iï]tiennes?)\\b"
+}
+
+normalize_concept_text <- function(value) {
+  value <- ifelse(is.na(value), "", value)
+  trimws(gsub("\\s+", " ", value, perl = TRUE))
+}
+
+dedicated_haiti_document <- function(title, text, document_type) {
+  dedicated_types <- c(
+    "backgrounder", "committee_report", "country_relations",
+    "implementation_report", "news_release", "project_story",
+    "sanctions_policy", "speech", "statement"
+  )
+  grepl(haiti_reference_pattern(), title %||% "", ignore.case = TRUE, perl = TRUE) &&
+    grepl(haiti_reference_pattern(), text %||% "", ignore.case = TRUE, perl = TRUE) &&
+    (document_type %||% "") %in% dedicated_types
+}
+
+haiti_context_units <- function(text, relevance_text = "", title = "",
+                                document_type = "", context_characters = 650L) {
+  text <- ifelse(is.na(text), "", text)
+  relevance_text <- ifelse(is.na(relevance_text), "", relevance_text)
+  haiti_pattern <- haiti_reference_pattern()
+  units <- list()
+  unit_index <- 0L
+  add_unit <- function(value, rule) {
+    value <- normalize_concept_text(value)
+    if (!nzchar(value)) return(invisible(NULL))
+    unit_index <<- unit_index + 1L
+    units[[unit_index]] <<- data.frame(
+      context_text = value,
+      matching_rule = rule,
+      stringsAsFactors = FALSE
+    )
+  }
+
+  paragraphs <- unlist(strsplit(text, "(?:\\r?\\n){2,}|\\f", perl = TRUE))
+  paragraphs <- paragraphs[
+    nchar(paragraphs) <= 2500L &
+      grepl(haiti_pattern, paragraphs, ignore.case = TRUE, perl = TRUE)
+  ]
+  for (paragraph in paragraphs) add_unit(paragraph, "haiti_paragraph")
+
+  if (grepl(haiti_pattern, relevance_text, ignore.case = TRUE, perl = TRUE)) {
+    add_unit(relevance_text, "stored_relevance_passage")
+  }
+
+  references <- gregexpr(haiti_pattern, text, ignore.case = TRUE, perl = TRUE)[[1]]
+  if (references[1] != -1L) {
+    for (position in references) {
+      add_unit(
+        substr(
+          text,
+          max(1L, position - context_characters),
+          min(nchar(text), position + context_characters)
+        ),
+        "bounded_haiti_context"
+      )
+    }
+  }
+
+  # Whole-text matching is restricted to publication forms that can establish
+  # a single-document subject, and whose title and body explicitly name Haiti.
+  # Multi-topic forms (for example debates, evidence, annual reports, policies,
+  # and estimates) never qualify merely because Haiti appears in their title.
+  if (dedicated_haiti_document(title, text, document_type)) {
+    add_unit(text, "dedicated_haiti_document")
+  }
+
+  if (!length(units)) {
+    return(data.frame(context_text = character(), matching_rule = character()))
+  }
+  unique(do.call(rbind, units))
+}
+
+match_concepts_contextually <- function(text, terms, relevance_text = "",
+                                        title = "", document_type = "",
+                                        language = "") {
+  units <- haiti_context_units(
+    text,
+    relevance_text = relevance_text,
+    title = title,
+    document_type = document_type
+  )
+  if (!nrow(units)) return(data.frame())
+  patterns <- vapply(terms$pattern, normalize_concept_pattern, character(1))
+  evidence <- list()
+  evidence_index <- 0L
+  for (term_index in seq_len(nrow(terms))) {
+    for (unit_index in seq_len(nrow(units))) {
+      context <- units$context_text[unit_index]
+      matches <- gregexpr(
+        patterns[term_index],
+        context,
+        ignore.case = TRUE,
+        perl = TRUE
+      )[[1]]
+      if (matches[1] == -1L) next
+      lengths <- attr(matches, "match.length")
+      for (match_index in seq_along(matches)) {
+        position <- matches[match_index]
+        evidence_index <- evidence_index + 1L
+        evidence[[evidence_index]] <- data.frame(
+          proposed_concept = terms$term_id[term_index],
+          language = language,
+          matched_phrase = substr(
+            context,
+            position,
+            position + lengths[match_index] - 1L
+          ),
+          context_excerpt = normalize_concept_text(substr(
+            context,
+            max(1L, position - 220L),
+            min(nchar(context), position + lengths[match_index] + 220L)
+          )),
+          matching_rule = units$matching_rule[unit_index],
+          stringsAsFactors = FALSE
+        )
+      }
+    }
+  }
+  if (!length(evidence)) return(data.frame())
+  unique(do.call(rbind, evidence))
+}
+
+code_terms <- function(text, terms, relevance_text = "", title = "",
+                       document_type = "") {
+  evidence <- match_concepts_contextually(
+    text,
+    terms,
+    relevance_text = relevance_text,
+    title = title,
+    document_type = document_type
+  )
+  if (!nrow(evidence)) return("")
+  paste(unique(evidence$proposed_concept), collapse = "|")
 }
 
 classify_families <- function(text, defaults, families) {

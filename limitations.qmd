@@ -2,26 +2,18 @@
 title: "Limitations and missing sources"
 ---
 
-Official search interfaces change, use JavaScript, rate-limit automation, or expose incomplete historical indexes. Older scans may lack machine-readable text; date inference and bilingual language detection are intentionally conservative. Search results are discovery aids, never corpus records. Family classification combines source defaults with editable patterns and therefore requires scholarly review.
+Official records survive and remain publicly accessible unevenly across institutions and periods. Search interfaces change, historical indexes can be incomplete, and older documents may no longer have linked official landing pages. A retrieval gap indicates missing coverage rather than the absence of relevant Canadian activity or documentation.
 
-The first validation reports gaps in `data/retrieval_diagnostics.csv`. In particular, historical CIDA material, older parliamentary scans, RCMP mission archives, white papers, and budgets may require additional catalogue endpoints or curated official seed listings. A retrieval failure means coverage is missing, not that no relevant official documents exist.
+Official-language symmetry is incomplete. Some publishers provide only one accessible language version, while some historical publications are inseparably bilingual. English and French versions may also use different formulations. Bilingual pairing therefore depends on authoritative links or identifiers, and missing counterparts remain visible rather than being inferred from title similarity.
 
-Historical catalogue result counts are not coverage counts. Broad publications, inaccessible scans, or documents whose extracted text does not substantively concern Haiti are excluded and reported diagnostically. OCR may prevent validation even when catalogue metadata appears relevant. Page-modification dates do not establish historical operation coverage. Bilingual pairing depends on authoritative links or identifiers; missing counterparts remain explicit diagnostics. No family is described as covered until focused and bounded validation passes.
+OCR and text extraction vary in quality. Image-only scans, complex parliamentary columns, damaged text, and page-by-page archives can obscure headings, dates, context, or relevant wording. Publication dates are not consistently available, especially for historical or evergreen pages; uncertain dates remain explicit. Page-modification dates are not treated as publication dates.
 
-The accurate historical-sanctions finding is limited: the 1991–1998 connector validated no historical candidate documents. It does not imply that Global Affairs Canada lacks Haiti sanctions documents; current GAC policy and announcement pages are covered by a separate connector. Historical Gazette issues, archived orders, and foreign-affairs records can remain undiscovered or unreadable because of incomplete indexes and OCR.
+Institutions differ in document length, genre, publication frequency, digitization, and archival practice. These differences affect documentary visibility and the apparent distribution of institutions, families, concepts, and engagements. Visibility in the corpus is not equivalent to governmental importance, effort, or activity.
 
-This tool supports research judgment; it does not replace it. Consult the linked official record before citation.
+Institutional attribution identifies the official issuer or producer, not every organization or actor involved in the documented action. Document families necessarily simplify publications that may combine several functions, although multiple family assignments are allowed where several domains are substantively represented.
 
-Automatic pre-review classification can produce false negatives, especially
-when OCR is poor or a short substantive passage resembles a procedural mention.
-Page-by-page historical archives can split headings, dates, and relevant text
-across images. Some genuinely bilingual publications cannot be separated
-cleanly and therefore remain one bilingual record. Ambiguous classifications,
-page groupings, dates, and bilingual relationships still require human review.
-An excluded list, index, procedural reference, comparison, or isolated mention
-may still be historically useful outside the corpus's substantive-inclusion
-scope. Its exclusion rationale remains auditable even after it leaves the active
-review queue.
-Dashboard document totals use distinct logical identifiers and depend on the
-reconciled retained corpus; stale rendered site artifacts can otherwise display
-an earlier count until the site is regenerated.
+Concept and spatial coding depend on explicit configured wording. Contextual matching and human review reduce false positives, but implicit concepts may remain undetected, translations may use different expressions, and poor OCR may create false negatives. The absence of a confirmed concept does not prove that the underlying idea is absent from a document.
+
+The engagement board is a curated analytical layer rather than an exhaustive inventory or a measure of intervention intensity. Combining documents under one engagement can conceal documentary variation, while separating actions requires explicit official evidence. Missing or approximate dates affect placement, and the period of an international mandate may differ from the period of Canadian participation. Chronology alone does not establish causality.
+
+This resource supports research judgment but does not replace consultation of the linked official record before citation.
