@@ -648,7 +648,7 @@ if (nrow(docs)) {
     family = sort(unique(fam$value)),
     concept = sort(unique(con$value))
   )
-  cat('<div class="document-tools">')
+  cat('<div class="document-tools" data-document-explorer-controls>')
   cat(sprintf('<label class="search-field"><span>%s</span><input id="q" type="search" placeholder="%s" class="form-control"></label>', L$search_documents, L$search_placeholder))
   cat('<div class="filter-row">')
   for (nm in names(filters)) {
@@ -703,9 +703,12 @@ if (nrow(docs)) {
 document.addEventListener('DOMContentLoaded', () => {
   const table = document.querySelector('#corpus-table');
   if (!table) return;
-  const controls = [...document.querySelectorAll('#q, [id^="f-"]')];
+  const explorerControls = document.querySelector('[data-document-explorer-controls]');
+  const controls = [...(explorerControls?.querySelectorAll('#q, [id^="f-"]') || [])];
+  const filterSelects = controls.filter(control => control.matches('select[id^="f-"]'));
   const groups = [...table.querySelectorAll('tbody.document-group')];
   const noResults = document.querySelector('#no-results');
+  window.corpusSpatialDocumentIds = null;
   const apply = () => {
     const query = (document.querySelector('#q')?.value || '').trim().toLowerCase();
     let visible = 0;
@@ -715,7 +718,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (spatialIds !== null && spatialIds !== undefined) {
         show = show && spatialIds.has(group.dataset.documentId);
       }
-      document.querySelectorAll('[id^="f-"]').forEach(select => {
+      filterSelects.forEach(select => {
         if (!select.value) return;
         const key = select.id.slice(2);
         const values = (group.dataset[key] || '').split('|').map(value => value.trim().toLowerCase());
@@ -728,6 +731,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   controls.forEach(control => control.addEventListener('input', apply));
   window.addEventListener('corpus-spatial-filter', apply);
+  apply();
 });
 </script>
 ```

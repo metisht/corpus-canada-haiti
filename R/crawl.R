@@ -114,6 +114,44 @@ pre_review_classification <- function(title, text, url = "") {
   list(include = TRUE, status = "completed", rule = "substantive_passage", reason = "")
 }
 
+pco_briefing_document_key <- function(url, alternate_urls = character()) {
+  urls <- unique(c(url, alternate_urls))
+  urls <- urls[nzchar(urls)]
+  english <- urls[grepl("/en/", urls, ignore.case = TRUE)]
+  reference <- if (length(english)) english[1] else urls[1]
+  path <- httr2::url_parse(reference)$path
+  parts <- strsplit(sub("^/", "", path), "/", fixed = TRUE)[[1]]
+  collection <- parts[length(parts) - 1L]
+  actor <- sub("-20\\d{2}.*$", "", collection)
+  slug <- sub("\\.html$", "", parts[length(parts)], ignore.case = TRUE)
+  dates <- unique(vapply(urls, discovered_date, character(1)))
+  dates <- dates[!is.na(dates) & nzchar(dates)]
+  event_date <- if (length(dates)) unname(dates[1]) else "date-uncertain"
+  paste("pco", paste0(actor, "-briefing-book"), event_date, slug, sep = ":")
+}
+
+pco_briefing_title <- function(title, url, language, event_date) {
+  collection <- basename(dirname(httr2::url_parse(url)$path))
+  if (!grepl("^(prime-minister|premier-ministre)-", collection,
+             ignore.case = TRUE)) return(title)
+  date <- suppressWarnings(as.Date(event_date))
+  if (is.na(date)) return(title)
+  if (identical(language, "fr")) {
+    months <- c("janvier", "février", "mars", "avril", "mai", "juin",
+                "juillet", "août", "septembre", "octobre", "novembre",
+                "décembre")
+    label <- sprintf("%d %s %d", as.integer(format(date, "%d")),
+                     months[as.integer(format(date, "%m"))],
+                     as.integer(format(date, "%Y")))
+    paste(title, "Cahier de breffage du premier ministre", label, sep = " — ")
+  } else {
+    label <- format(date, "%B %d, %Y")
+    label <- sub(" 0", " ", label, fixed = TRUE)
+    paste(title, "Briefing Book for the Prime Minister of Canada", label,
+          sep = " — ")
+  }
+}
+
 source_document_id <- function(url, source_id, document_type = "",
                                alternate_urls = character()) {
   if (source_id == "parliament")
@@ -130,6 +168,10 @@ source_document_id <- function(url, source_id, document_type = "",
   if (source_id == "defence_policy_index")
     return(paste0("doc_", substr(digest::digest(
       defence_policy_document_key(url), "sha256"), 1, 16)))
+  if (source_id == "pco_briefing_index")
+    return(paste0("doc_", substr(digest::digest(
+      pco_briefing_document_key(url, alternate_urls),
+      "sha256"), 1, 16)))
   stable_document_id(url, alternate_urls)
 }
 
@@ -166,6 +208,11 @@ process_url <- function(url, source, cfg, terms, families, force = FALSE) {
   hash <- digest::digest(content$text, algo = "sha256", serialize = FALSE)
   lang <- discovered_language(url)
   if (!length(lang)) lang <- language_of(content$text)
+  if (source$source_id == "pco_briefing_index") {
+    content$title <- pco_briefing_title(
+      content$title, url, lang, dates$event_start_date
+    )
+  }
   if (source$source_id == "defence_policy_index") {
     official_title <- defence_policy_title(url, lang)
     if (nzchar(official_title)) content$title <- official_title
@@ -329,6 +376,29 @@ apply_review <- function(candidates, review) {
   candidates
 }
 
+merge_retrieval_diagnostics <- function(existing, current) {
+  if (!nrow(current)) return(existing)
+  if (!nrow(existing)) return(current)
+  identity_columns <- setdiff(diagnostic_columns, c("run_id", "occurred_at"))
+  diagnostic_key <- function(rows) do.call(
+    paste, c(lapply(rows[identity_columns], function(value) {
+      value[is.na(value)] <- ""
+      as.character(value)
+    }), sep = "\r")
+  )
+  current_key <- diagnostic_key(current)
+  existing <- existing[!diagnostic_key(existing) %in% current_key, , drop = FALSE]
+  bind_rows_base(list(existing, current))
+}
+
+preserve_discovered_document_ids <- function(fresh, existing) {
+  if (!nrow(fresh) || !nrow(existing)) return(fresh)
+  existing_routes <- setNames(existing$document_id, existing$canonical_url)
+  matched <- unname(existing_routes[fresh$canonical_url])
+  fresh$document_id[!is.na(matched)] <- matched[!is.na(matched)]
+  fresh
+}
+
 run_crawl <- function(validation = TRUE, force = FALSE, source_ids = NULL,
                       from_year = NA_integer_, to_year = NA_integer_, max_valid = NA_integer_) {
   cfg <- yaml::read_yaml("config/case.yml")
@@ -396,6 +466,7 @@ run_crawl <- function(validation = TRUE, force = FALSE, source_ids = NULL,
     add_diag(source$source_id, source$required_family %||% source$default_families, source$start_url, "validation", "completed", paste(length(valid_documents), "valid logical documents;", valid, "official-language records"))
   }
   fresh <- bind_rows_base(records)
+  fresh <- preserve_discovered_document_ids(fresh, old)
   if (nrow(fresh)) {
     for (id in unique(fresh$document_id)) {
       z <- fresh[fresh$document_id == id, , drop=FALSE]
@@ -423,7 +494,8 @@ run_crawl <- function(validation = TRUE, force = FALSE, source_ids = NULL,
     stop("Candidate serialization blocked: mojibake remains in title, excerpt, or extracted text")
   new_diag <- bind_rows_base(diagnostics)
   if (nrow(new_diag)) new_diag <- new_diag[!duplicated(new_diag[setdiff(diagnostic_columns, "occurred_at")]), , drop=FALSE]
-  diag <- bind_rows_base(list(old_diagnostics, new_diag)); if (!nrow(diag)) diag <- empty_frame(diagnostic_columns)
+  diag <- merge_retrieval_diagnostics(old_diagnostics, new_diag)
+  if (!nrow(diag)) diag <- empty_frame(diagnostic_columns)
   run_summary <- diagnostic_run_summary(new_diag, run_id)
   # New discoveries are pending, so a bounded validation must not change the
   # retained corpus. Fail before writing if an existing retained record moved.

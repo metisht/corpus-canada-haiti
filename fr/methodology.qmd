@@ -15,6 +15,8 @@ L’unité documentaire est la publication officielle ou la séance parlementair
 
 Le repérage est limité aux listes, archives, catalogues, systèmes de recherche et interfaces de programmation officiels canadiens configurés. Les résultats de recherche et les notices de catalogue servent de pistes plutôt que de documents du corpus : le document officiel doit être récupéré, appartenir à la période étudiée et satisfaire au critère de contenu substantiel sur Haïti. Le texte HTML ou PDF est extrait localement, tandis que les résultats et les échecs de récupération demeurent consignés dans les diagnostics. Les URL directes, pages de repérage, URL composantes, formats et métadonnées de récupération sont conservés pour établir la provenance.
 
+Le corpus comprend des publications de politique publique ainsi que des documents administratifs ou opérationnels qui rendent compte de leur mise en œuvre. Le périmètre des sources configurées comprend l’index bilingue des documents d’information du Bureau du Conseil privé; seules les pages de breffage indexées qui présentent un contenu substantiel sur Haïti sont soumises à l’examen humain.
+
 La `source` désigne le connecteur ou la collection officielle par lesquels le document a été découvert. Elle peut différer de l’institution qui a produit le document. Le `document_type` désigne sa forme administrative ou éditoriale précise et se situe à un niveau plus détaillé que la famille documentaire. Source, institution, famille et type de document sont donc des variables distinctes.
 
 Les dates de publication, les dates de modification des pages et les dates d’opération ou d’événement sont conservées séparément. L’année analytique correspond au début de l’opération pour les documents opérationnels et, dans les autres cas, à la date de publication officielle; une date incertaine demeure explicitement incertaine plutôt que d’être déduite de métadonnées sans rapport direct.
@@ -66,7 +68,7 @@ Quatre états distinguent le résultat :
 - `reviewed_no_confirmed_concept` : les propositions ou attributions antérieures ont été révisées, mais toutes ont été rejetées;
 - `no_configured_match` : la correspondance contextuelle n’a produit aucune proposition.
 
-Le corpus achevé contient 150 documents logiques : 91 `confirmed`, aucun `pending_review`, 30 `reviewed_no_confirmed_concept` et 29 `no_configured_match`. Il comprend 184 relations document–concept confirmées. Le tableau documentaire et la carte thermique utilisent uniquement les concepts confirmés; les documents en attente ne sont pas traités comme des documents ayant zéro concept.
+Le corpus achevé contient 151 documents logiques : 91 `confirmed`, un `pending_review`, 30 `reviewed_no_confirmed_concept` et 29 `no_configured_match`. Il comprend 184 relations document–concept confirmées. Le tableau documentaire et la carte thermique utilisent uniquement les concepts confirmés; les documents en attente ne sont pas traités comme des documents ayant zéro concept.
 
 Les documents sans concept confirmé demeurent dans le corpus parce que l’inclusion substantielle est déterminée indépendamment du codage conceptuel. Une publication pertinente peut documenter des opérations, des dépenses, des institutions ou une intervention sans employer le vocabulaire sélectionné. Retirer ces documents reviendrait à sélectionner le corpus en fonction des concepts mesurés, et l’absence d’un concept confirmé ne prouve pas que l’idée sous-jacente est absente.
 
@@ -74,7 +76,7 @@ Les documents sans concept confirmé demeurent dans le corpus parce que l’incl
 
 Le codage spatial commence par des propositions lexicales bilingues situées dans un contexte concernant Haïti. Les occurrences sont consolidées au niveau `document_id + dimension + proposed_code`, et les preuves anglaises et françaises sont conservées séparément. Des réviseurs humains confirment ou rejettent chaque proposition. Les mentions géographiques sont rejetées lorsqu’elles ne structurent pas l’action ou la relation documentée, notamment les noms de lieux incidents, les affiliations, les formules administratives ou les références à un autre pays.
 
-La révision spatiale achevée contient 156 propositions confirmées et 62 rejetées, sans aucune proposition en attente.
+La révision spatiale achevée contient 160 propositions confirmées et 62 rejetées, sans aucune proposition en attente.
 
 La constellation des configurations spatiales utilise uniquement les codages confirmés et compte chaque `document_id` logique une seule fois pour une période et un code donnés. Il s’agit d’une vue schématique et non géographique : la force des liens représente le nombre de documents distincts qui les étayent, tandis que la position et la distance ne représentent ni la localisation géographique ni l’importance causale.
 

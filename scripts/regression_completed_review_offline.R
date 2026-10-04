@@ -1,6 +1,6 @@
-# Offline fixture for the completed 150-document review state.
+# Offline fixture for the completed 151-document review state.
 # Reads project CSVs only and asserts retained membership, rejection audit history,
-# bilingual grouping, uniqueness, UTF-8 validity, and the known 235-version fixture.
+# bilingual grouping, uniqueness, UTF-8 validity, and the known 237-version fixture.
 
 source("R/utils.R")
 source("R/discover.R")
@@ -16,12 +16,12 @@ corpus <- safe_read_csv("data/corpus.csv")
 diagnostics <- safe_read_csv("data/retrieval_diagnostics.csv")
 changes <- safe_read_csv("data/validation_changes.csv")
 
-stopifnot(nrow(review) == 150L, all(review$decision == "retain"),
+stopifnot(nrow(review) == 151L, all(review$decision == "retain"),
           !any(review$decision %in% c("pending", "reject")),
-          length(unique(review$document_id)) == 150L)
+          length(unique(review$document_id)) == 151L)
 stopifnot(
-  nrow(corpus) == 235L,
-  dplyr::n_distinct(corpus$document_id) == 150L,
+  nrow(corpus) == 237L,
+  dplyr::n_distinct(corpus$document_id) == 151L,
   all(corpus$review_status == "retain"),
   !any(corpus$review_status %in% c("pending", "reject")),
   setequal(unique(corpus$document_id),
@@ -46,7 +46,7 @@ stopifnot(pre_review_classification(
   "Haiti appears in a country list.", "")$status == "excluded")
 stopifnot(!any(duplicated(candidates$version_id)),
           !any(duplicated(paste(candidates$document_id, candidates$language))))
-stopifnot(length(unique(corpus$version_id)) == 235L,
+stopifnot(length(unique(corpus$version_id)) == 237L,
           !any(duplicated(paste(corpus$document_id, corpus$language))))
 stopifnot(!any(vapply(candidates[c("title", "relevance_excerpt", "extracted_text")],
                       contains_mojibake, logical(1))))
@@ -55,6 +55,10 @@ stopifnot(all(review$document_id %in% corpus$document_id),
 retained_candidates <- candidates[candidates$document_id %in%
   review$document_id[review$decision == "retain"], ]
 stopifnot(setequal(corpus$version_id, retained_candidates$version_id))
+pco <- corpus[corpus$document_id == "doc_bf16e0a427deba37", ]
+stopifnot(nrow(pco) == 2L, setequal(pco$language, c("en", "fr")),
+          all(pco$review_status == "retain"),
+          all(grepl("^https://www\\.canada\\.ca/", pco$document_url)))
 paired <- split(corpus, corpus$document_id)
 paired <- paired[vapply(paired, nrow, integer(1)) > 1L]
 stopifnot(all(vapply(paired, function(rows) {

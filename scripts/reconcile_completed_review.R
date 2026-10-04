@@ -17,13 +17,13 @@ review <- safe_read_csv(review_path)
 changes <- safe_read_csv(changes_path)
 review_before <- review[, review_columns, drop = FALSE]
 
-if (nrow(review) != 150L || length(unique(review$document_id)) != 150L ||
+if (nrow(review) != length(unique(review$document_id)) ||
     any(review$decision != "retain"))
-  stop("Expected exactly 150 authoritative retain decisions")
+  stop("Expected one authoritative retain decision per logical document")
 if (!setequal(review$document_id, unique(candidates$document_id)))
   stop("Candidate and authoritative review document identities differ")
-if (nrow(candidates) != 235L)
-  stop("Expected 235 active candidate versions")
+expected_documents <- nrow(review)
+expected_versions <- nrow(candidates)
 
 metadata_before <- candidates
 
@@ -187,7 +187,8 @@ if (any(stale_status)) {
   changes <- bind_rows_base(list(changes, status_audit))
 }
 
-completed_ids <- c(target_ids, "doc_01014bd134ebab17")
+completed_ids <- c(target_ids, "doc_01014bd134ebab17",
+                   "doc_bf16e0a427deba37")
 completed_rows <- candidates[candidates$document_id %in% completed_ids,
                              , drop = FALSE]
 completed_review <- review[match(completed_rows$document_id, review$document_id),
@@ -214,6 +215,50 @@ completed_status_audit <- data.frame(
 )
 changes <- bind_rows_base(list(changes, completed_status_audit))
 
+pco_id <- "doc_bf16e0a427deba37"
+spatial_queue <- safe_read_csv("data/spatial_review_queue.csv")
+spatial_decisions <- spatial_queue[
+  spatial_queue$document_id == pco_id &
+    spatial_queue$coding_decision == "confirm",
+  , drop = FALSE
+]
+expected_spatial_codes <- c(
+  "neighbourhood", "migration_mobility", "bilateral", "caribbean"
+)
+if (nrow(spatial_decisions) != length(expected_spatial_codes) ||
+    !setequal(spatial_decisions$proposed_code, expected_spatial_codes))
+  stop("Expected four confirmed PCO spatial decisions")
+pco_rows <- candidates[candidates$document_id == pco_id, , drop = FALSE]
+spatial_audit <- bind_rows_base(lapply(seq_len(nrow(spatial_decisions)),
+  function(index) {
+    decision <- spatial_decisions[index, , drop = FALSE]
+    data.frame(
+      change = "spatial_review_decision_propagated",
+      version_id = pco_rows$version_id,
+      document_id = pco_rows$document_id,
+      language = pco_rows$language,
+      title = pco_rows$title,
+      document_url = pco_rows$document_url,
+      review_status = "retain",
+      old_document_id = pco_rows$document_id,
+      new_document_id = pco_rows$document_id,
+      rule = paste0(
+        "authoritative_spatial_review:", decision$dimension, "/",
+        decision$proposed_code
+      ),
+      reason = decision$review_notes,
+      source = pco_rows$source_id,
+      previous_state = "pending",
+      resulting_state = "confirm",
+      manual_decision = decision$coding_decision,
+      reviewer = decision$reviewer,
+      review_timestamp = decision$reviewed_at,
+      stringsAsFactors = FALSE
+    )
+  }
+))
+changes <- bind_rows_base(list(changes, spatial_audit))
+
 candidates <- apply_review(candidates, review)
 candidates <- candidates[order(candidates$year, candidates$title,
                                candidates$language, na.last = TRUE),
@@ -232,10 +277,10 @@ plan_final <- candidates$document_id == "doc_9ec69e5108acfcad"
 
 stopifnot(
   identical(review_before, review[, review_columns, drop = FALSE]),
-  nrow(candidates) == 235L,
-  length(unique(candidates$document_id)) == 150L,
-  nrow(corpus) == 235L,
-  length(unique(corpus$document_id)) == 150L,
+  nrow(candidates) == expected_versions,
+  length(unique(candidates$document_id)) == expected_documents,
+  nrow(corpus) == expected_versions,
+  length(unique(corpus$document_id)) == expected_documents,
   all(candidates$review_status == "retain"),
   all(corpus$review_status == "retain"),
   setequal(unique(corpus$document_id), review$document_id),
@@ -253,5 +298,6 @@ write_csv(candidates, candidate_path)
 write_csv(corpus, corpus_path)
 write_csv(changes, changes_path)
 
-message("Completed-review reconciliation: 150 retained logical documents, ",
+message("Completed-review reconciliation: ", expected_documents,
+        " retained logical documents, ",
         nrow(corpus), " retained versions")

@@ -12,6 +12,8 @@ The documentary unit is an official publication or parliamentary sitting, not an
 
 Discovery is restricted to configured official Canadian listings, archives, catalogues, search systems, and APIs. Search results and catalogue notices are discovery aids rather than corpus records: the official document must be retrieved, fall within the temporal scope, and satisfy the substantive-Haiti criterion. HTML and PDF text are extracted locally, while retrieval outcomes and failures remain in diagnostics. Direct document URLs, discovery pages, component URLs, formats, and retrieval metadata are preserved for provenance.
 
+The corpus includes official policy publications and administrative or operational records that document implementation. The configured source scope includes the Privy Council Office’s bilingual briefing-document index; only indexed briefing pages with substantive Haiti content proceed to human review.
+
 `source` identifies the official connector or collection through which a document was discovered. It may differ from the institution that issued the document. `document_type` identifies the document’s precise administrative or editorial form and is more specific than document family. Source, institution, family, and document type are therefore distinct variables.
 
 Publication dates, page-modification dates, and operation or event dates are stored separately. The analytical year uses an operation’s start date for operation records and otherwise uses the official publication date; uncertain dates remain explicitly uncertain rather than being inferred from unrelated metadata.
@@ -63,7 +65,7 @@ Four states distinguish the outcome:
 - `reviewed_no_confirmed_concept`: proposals or previous assignments were reviewed, but all were dismissed;
 - `no_configured_match`: contextual matching produced no proposal.
 
-The completed corpus contains 150 logical documents: 91 `confirmed`, none `pending_review`, 30 `reviewed_no_confirmed_concept`, and 29 `no_configured_match`. It contains 184 confirmed document–concept relationships. The document table and heatmap use confirmed concepts only; pending documents are not treated as documents with zero concepts.
+The completed corpus contains 151 logical documents: 91 `confirmed`, one `pending_review`, 30 `reviewed_no_confirmed_concept`, and 29 `no_configured_match`. It contains 184 confirmed document–concept relationships. The document table and heatmap use confirmed concepts only; pending documents are not treated as documents with zero concepts.
 
 Documents without a confirmed concept remain because substantive inclusion is determined independently from concept coding. A relevant publication may document operations, expenditures, institutions, or intervention without using the selected vocabulary. Removing such documents would select the corpus according to the concepts being measured, and the absence of a confirmed concept does not prove that the underlying idea is absent.
 
@@ -71,7 +73,7 @@ Documents without a confirmed concept remain because substantive inclusion is de
 
 Spatial coding begins with bilingual lexical proposals in Haiti-related context. Occurrences are consolidated at `document_id + dimension + proposed_code`, with English and French evidence preserved separately. Human reviewers confirm or dismiss each proposal. Geographical mentions are rejected when they do not structure the documented action or relationship, including incidental place names, affiliations, administrative boilerplate, or references to an unrelated country.
 
-The completed spatial review contains 156 confirmed and 62 dismissed proposals, with none pending.
+The completed spatial review contains 160 confirmed and 62 dismissed proposals, with none pending.
 
 The spatial-configuration constellation uses confirmed coding only and counts each logical `document_id` once for a given period and code. It is a schematic, non-geographical view: connection strength represents distinct supporting documents, while position and distance do not represent geographic location or causal importance.
 

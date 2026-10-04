@@ -119,7 +119,10 @@ extract_date_metadata <- function(text, url, source_id) {
   page_modified <- if (!is.na(page_raw)) first_match("20\\d{2}-\\d{2}-\\d{2}", page_raw) else NA_character_
   event_start <- event_end <- publication <- NA_character_
 
-  if (source_id %in% c("parliament", "historical_parliament")) {
+  if (source_id == "pco_briefing_index") {
+    event_start <- discovered_date(url)
+    publication <- page_modified
+  } else if (source_id %in% c("parliament", "historical_parliament")) {
     is_report <- grepl("/Reports/|_Rpt[0-9]+_", url, ignore.case = TRUE)
     if (!is_report) {
       raw <- first_match("(Monday|Tuesday|Wednesday|Thursday|Friday), +(January|February|March|April|May|June|July|August|September|October|November|December) +[0-9]{1,2}, +(19|20)\\d{2}", text)
@@ -418,6 +421,26 @@ derive_document_metadata <- function(title, text, url, source) {
     ok <- grepl("budget|estimates|public accounts|budget des dépenses|comptes publics", title, ignore.case = TRUE)
     issuer <- if (grepl("international\\.(gc|canada)\\.ca$", host)) "Global Affairs Canada" else source$institution
     return(list(institution = issuer, families = if (ok) "public_finance" else "", document_type = if (ok) observable_document_type(title, url, "expenditure_document") else "other"))
+  }
+  if (source$source_id == "pco_briefing_index") {
+    french <- grepl("/fr/", url, ignore.case = TRUE)
+    detected <- classify_families(
+      paste(title, text), "", safe_read_csv("config/families.csv")
+    )
+    regional <- grepl(
+      "Caribbean|Americas|hemisphere|regional|neighbou?rhood|Caraïbes|Amériques|hémisphère|régional|voisinage",
+      paste(title, text), ignore.case = TRUE, perl = TRUE
+    )
+    assigned <- unique(c(
+      strsplit(detected %||% "", "\\|")[[1]],
+      if (regional) "regional_strategy" else character()
+    ))
+    assigned <- assigned[nzchar(assigned)]
+    return(list(
+      institution = if (french) "Bureau du Conseil privé" else "Privy Council Office",
+      families = paste(assigned, collapse = "|"),
+      document_type = "briefing_book"
+    ))
   }
   detected <- classify_families(paste(title, text), "", safe_read_csv("config/families.csv"))
   list(institution = source$institution, families = detected, document_type = if (grepl("report", title, ignore.case=TRUE)) "report" else if (grepl("policy|politique", title, ignore.case=TRUE)) "policy" else if (grepl("budget|estimates|comptes publics", title, ignore.case=TRUE)) "public_finance_document" else "other")

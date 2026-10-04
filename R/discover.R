@@ -25,7 +25,8 @@ verified_parliament_report_viewer <- function(document_url) {
     "https://www.ourcommons.ca/content/Committee/451/FAAE/Reports/RP13790973/451_FAAE_Rpt4_PDF/451_FAAE_Rpt4-f.pdf" =
       "https://www.noscommunes.ca/documentviewer/fr/45-1/FAAE/rapport-4"
   )
-  match <- verified[[canonicalize_url(document_url)]]
+  key <- canonicalize_url(document_url)
+  match <- if (key %in% names(verified)) verified[[key]] else character()
   match %||% character()
 }
 
@@ -556,6 +557,78 @@ discover_parliament_collection <- function(source, cfg, force = FALSE) {
   out[keys %in% allowed]
 }
 
+pco_briefing_event_date <- function(label) {
+  normalized <- tolower(clean_space(label))
+  year <- first_match("(?:19|20)\\d{2}", normalized)
+  if (is.na(year)) return(NA_character_)
+  day <- suppressWarnings(as.integer(first_match("\\b[0-3]?\\d\\b", normalized)))
+  months <- c(
+    january = 1L, february = 2L, march = 3L, april = 4L, may = 5L,
+    june = 6L, july = 7L, august = 8L, september = 9L, october = 10L,
+    november = 11L, december = 12L, janvier = 1L, `février` = 2L,
+    mars = 3L, avril = 4L, mai = 5L, juin = 6L, juillet = 7L,
+    `août` = 8L, septembre = 9L, octobre = 10L, novembre = 11L,
+    `décembre` = 12L
+  )
+  month_name <- names(months)[vapply(names(months), grepl, logical(1), x = normalized, fixed = TRUE)]
+  if (!length(month_name) || is.na(day)) return(paste0(year, "-01-01"))
+  sprintf("%s-%02d-%02d", year, months[[month_name[1]]], day)
+}
+
+pco_briefing_route <- function(url, level = c("collection", "document")) {
+  level <- match.arg(level)
+  path <- httr2::url_parse(canonicalize_url(url))$path %||% ""
+  prefix <- "(?:en/privy-council/corporate/transparency/briefing-documents|fr/conseil-prive/organisation/transparence/documents-information)"
+  suffix <- if (level == "collection") "[^/]+\\.html$" else "[^/]+/[^/]+\\.html$"
+  grepl(paste0("^/", prefix, "/", suffix), path, ignore.case = TRUE, perl = TRUE)
+}
+
+pco_page_links <- function(doc, page, level) {
+  nodes <- rvest::html_elements(doc, "a[href]")
+  href <- xml2::url_absolute(rvest::html_attr(nodes, "href"), page)
+  label <- clean_space(rvest::html_text2(nodes))
+  keep <- !is.na(href) & grepl("^https://www\\.canada\\.ca/", href, ignore.case = TRUE) &
+    vapply(href, pco_briefing_route, logical(1), level = level)
+  data.frame(url = canonicalize_url(href[keep]), label = label[keep],
+             stringsAsFactors = FALSE)
+}
+
+discover_pco_briefing_index <- function(source, cfg, force = FALSE) {
+  indexes <- trimws(strsplit(source$start_url, "\\|")[[1]])
+  collections <- list()
+  for (index in indexes) {
+    fetched <- polite_get(index, cfg, force)
+    links <- pco_page_links(rvest::read_html(fetched$path), index, "collection")
+    if (nrow(links)) collections[[length(collections) + 1L]] <- links
+  }
+  if (!length(collections)) return(character())
+  collections <- unique(do.call(rbind, collections))
+  collections$event_date <- vapply(collections$label, pco_briefing_event_date,
+                                   character(1))
+  years <- suppressWarnings(as.integer(substr(collections$event_date, 1, 4)))
+  in_bounds <- is.na(years) | (years >= cfg$start_year & years <= cfg$end_year)
+  collections <- collections[in_bounds, , drop = FALSE]
+
+  documents <- character()
+  for (i in seq_len(nrow(collections))) {
+    collection <- collections$url[i]
+    fetched <- polite_get(collection, cfg, force)
+    links <- pco_page_links(rvest::read_html(fetched$path), collection,
+                            "document")
+    for (document_url in links$url) {
+      remember_discovery_source(document_url, collection)
+      remember_discovery_language(
+        document_url,
+        if (grepl("/fr/", document_url, ignore.case = TRUE)) "fr" else "en"
+      )
+      remember_discovery_date(document_url, collections$event_date[i])
+      remember_discovery_type(document_url, "briefing_book")
+    }
+    documents <- c(documents, links$url)
+  }
+  unique(canonicalize_url(documents))
+}
+
 discover_source <- function(source, cfg, force = FALSE) {
   urls <- switch(source$method,
     html_listing = discover_html_listing(source, cfg, force),
@@ -566,6 +639,7 @@ discover_source <- function(source, cfg, force = FALSE) {
     ckan_api = discover_ckan(source, cfg, force),
     publications_catalogue = discover_publications_catalogue(source, cfg, force),
     defence_policy_index = discover_defence_policy_index(source, cfg, force),
+    pco_briefing_index = discover_pco_briefing_index(source, cfg, force),
     seed_list = strsplit(source$start_url, "\\|")[[1]],
     stop("Unknown discovery method: ", source$method))
   if (source$source_id == "parliament" && source$method != "parliament_collection") urls <- unique(c(urls, vapply(urls, parliament_counterpart_url, character(1))))

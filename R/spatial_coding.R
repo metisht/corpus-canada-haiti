@@ -347,6 +347,9 @@ build_spatial_queue <- function(inventory) {
       reviewer = "",
       review_notes = "",
       reviewed_at = "",
+      suggested_decision = "",
+      suggestion_confidence = "",
+      suggestion_reason = "",
       stringsAsFactors = FALSE
     )
   })
@@ -363,7 +366,10 @@ preserve_spatial_queue_decisions <- function(queue, existing) {
   key <- paste(queue$document_id, queue$dimension, queue$proposed_code, sep = "|")
   existing_key <- paste(existing$document_id, existing$dimension, existing$proposed_code, sep = "|")
   matched <- match(key, existing_key)
-  decision_columns <- c("coding_decision", "reviewer", "review_notes", "reviewed_at")
+  decision_columns <- c(
+    "coding_decision", "reviewer", "review_notes", "reviewed_at",
+    "suggested_decision", "suggestion_confidence", "suggestion_reason"
+  )
   for (column in decision_columns) {
     if (!column %in% names(existing)) next
     preserved <- existing[[column]][matched]

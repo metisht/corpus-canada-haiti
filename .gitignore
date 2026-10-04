@@ -5,6 +5,7 @@
 .venv/
 R/Downloads/
 _site/
+_site.zip
 .quarto/
 **/.quarto_ipynb/
 _freeze/
@@ -37,6 +38,7 @@ data/concept_existing_unsupported_individual_review.csv
 scripts/build_concept_pending_review.R
 scripts/build_concept_remaining_review.R
 scripts/build_concept_existing_unsupported_review.R
+scripts/add_pco_briefing_candidate.R
 CONCEPT_CODING_STATES.md
 *.tmp
 *.log
