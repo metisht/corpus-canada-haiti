@@ -5,7 +5,7 @@
 spatial_constellation_labels <- list(
   en = list(
     title = "Spatial configurations",
-    period = "Corpus period",
+    period = "Corpus period", scales = "Scales",
     reset = "Reset spatial filter",
     haiti = "Haiti",
     nodes = c(
@@ -31,12 +31,14 @@ spatial_constellation_labels <- list(
     ),
     documents = "confirmed documents",
     no_data = "No confirmed documentary evidence in this period",
-    default_info = "Activate a node or relation to filter the document explorer.",
-    note = "This is a schematic representation of documented spatial configurations. Position and distance do not represent geographic location or causal importance."
+    default_info = "Select a cell to read the supporting passages and open official sources.",
+    evidence = "Supporting passages", source = "Official source", close = "Return to the overview",
+    denominator = "dated documents in the period",
+    note = "Each cell reports confirmed distinct documents (n) over all dated documents in the period (N). A dash means that the period has no dated documents."
   ),
   fr = list(
     title = "Configurations spatiales",
-    period = "Période du corpus",
+    period = "Période du corpus", scales = "Échelles",
     reset = "Réinitialiser le filtre spatial",
     haiti = "Haïti",
     nodes = c(
@@ -62,8 +64,10 @@ spatial_constellation_labels <- list(
     ),
     documents = "documents confirmés",
     no_data = "Aucune preuve documentaire confirmée pour cette période",
-    default_info = "Activez un nœud ou une relation pour filtrer l’exploration documentaire.",
-    note = "Il s’agit d’une représentation schématique des configurations spatiales documentées. La position et la distance ne représentent ni la localisation géographique ni l’importance causale."
+    default_info = "Sélectionnez une cellule pour lire les passages justificatifs et ouvrir les sources officielles.",
+    evidence = "Passages justificatifs", source = "Source officielle", close = "Revenir à la vue d’ensemble",
+    denominator = "documents datés de la période",
+    note = "Chaque cellule indique les documents distincts confirmés (n) sur tous les documents datés de la période (N). Un tiret signifie que la période ne contient aucun document daté."
   )
 )
 
@@ -120,85 +124,65 @@ spatial_filter_attributes <- function(ids, label, count, labels) {
   )
 }
 
-render_spatial_constellation <- function(spatial, doc_years, lang = "en") {
+render_spatial_constellation <- function(spatial, doc_years, docs, lang = "en") {
   labels <- spatial_constellation_labels[[lang]]
   records <- confirmed_spatial_documents(spatial, doc_years)
   node_definitions <- list(
-    list(key = "canada", codes = c("bilateral", "canada_domestic"), x = 175L, y = 105L),
-    list(key = "caribbean", codes = "caribbean", x = 170L, y = 405L),
-    list(key = "americas", codes = "americas_hemisphere", x = 450L, y = 465L),
-    list(key = "north_america", codes = "north_american_continental", x = 725L, y = 105L),
-    list(key = "global", codes = "global_multilateral", x = 730L, y = 405L)
+    list(key = "canada", codes = c("bilateral", "canada_domestic")),
+    list(key = "caribbean", codes = "caribbean"),
+    list(key = "americas", codes = "americas_hemisphere"),
+    list(key = "north_america", codes = "north_american_continental"),
+    list(key = "global", codes = "global_multilateral")
   )
   relation_codes <- c("special_relationship", "regional_partner", "neighbourhood")
   practice_codes <- c("migration_mobility", "border", "maritime", "transnational", "regional_security")
-  html <- c(
-    sprintf('<div class="spatial-constellation" data-spatial-constellation data-lang="%s">', lang),
-    sprintf('<label class="spatial-period-control"><span>%s</span><select class="form-select" data-spatial-period>', spatial_html_escape(labels$period)),
-    paste(sprintf('<option value="spatial-period-%d">%s</option>', seq_along(spatial_constellation_periods), spatial_constellation_periods), collapse = ""),
-    '</select></label>'
+  row_definitions <- c(
+    lapply(node_definitions, function(x) list(group = labels$scales, dimension = "spatial_scale", code = x$codes, label = unname(labels$nodes[x$key]))),
+    lapply(practice_codes, function(x) list(group = labels$practices, dimension = "spatial_practice", code = x, label = unname(labels$practice[x]))),
+    lapply(relation_codes, function(x) list(group = labels$relations, dimension = "relational_framing", code = x, label = unname(labels$relation[x])))
   )
-  for (period_index in seq_along(spatial_constellation_periods)) {
-    period <- spatial_constellation_periods[period_index]
-    period_records <- records[!is.na(records$period) & records$period == period, , drop = FALSE]
-    period_ids <- spatial_ids_for(period_records)
-    node_counts <- vapply(node_definitions, function(node) {
-      length(spatial_ids_for(period_records, "spatial_scale", node$codes))
-    }, integer(1))
-    maximum <- max(c(node_counts, 1L))
-    panel <- c(sprintf(
-      '<section id="spatial-period-%d" class="spatial-period-panel" data-spatial-period-panel aria-label="%s"%s>',
-      period_index, period, if (period_index == 1L) "" else " hidden"
-    ))
-    panel <- c(panel, sprintf(
-      '<svg class="spatial-schematic" viewBox="0 0 900 540" role="img" aria-labelledby="spatial-title-%d spatial-desc-%d"><title id="spatial-title-%d">%s — %s</title><desc id="spatial-desc-%d">%s</desc>',
-      period_index, period_index, period_index, spatial_html_escape(labels$title), period,
-      period_index, spatial_html_escape(labels$note)
-    ))
-    for (node_index in seq_along(node_definitions)) {
-      node <- node_definitions[[node_index]]
-      ids <- spatial_ids_for(period_records, "spatial_scale", node$codes)
-      count <- length(ids)
-      count_display <- if (count) as.character(count) else "—"
-      radius <- 25 + 17 * count / maximum
-      width <- 1.5 + 7 * count / maximum
-      node_label <- unname(labels$nodes[node$key])
-      attrs <- spatial_filter_attributes(ids, node_label, count, labels)
-      tooltip <- if (count) sprintf("%s: %d %s", node_label, count, labels$documents) else sprintf("%s: %s", node_label, labels$no_data)
-      panel <- c(panel, sprintf(
-        paste0('<g class="spatial-connection%s" role="button" tabindex="0" %s aria-label="%s">',
-          '<title>%s</title><line x1="450" y1="270" x2="%d" y2="%d" style="stroke-width:%.2f"/>',
-          '<circle cx="%d" cy="%d" r="%.2f"/><text class="spatial-node-label" x="%d" y="%.2f">%s</text>',
-          '<text class="spatial-node-count" x="%d" y="%d">%s</text></g>'),
-        if (count) "" else " is-no-data", attrs, spatial_html_escape(tooltip), spatial_html_escape(tooltip),
-        node$x, node$y, width, node$x, node$y, radius, node$x, node$y - radius - 12,
-        spatial_html_escape(node_label), node$x, node$y + 5, count_display
-      ))
+  denominators <- vapply(spatial_constellation_periods, function(period) {
+    document_periods <- as.character(spatial_period_from_year(doc_years$year))
+    length(unique(doc_years$document_id[!is.na(document_periods) & document_periods == period]))
+  }, integer(1))
+  html <- c(sprintf('<div class="spatial-constellation" data-spatial-constellation data-lang="%s">', lang),
+    '<div class="matrix-scroll"><table class="spatial-matrix"><thead><tr><th scope="col"></th>',
+    paste(sprintf('<th scope="col">%s<br><small>N = %d</small></th>', spatial_constellation_periods, denominators), collapse = ""),
+    '</tr></thead><tbody>')
+  previous_group <- ""
+  for (definition in row_definitions) {
+    if (!identical(definition$group, previous_group)) {
+      html <- c(html, sprintf('<tr class="spatial-group"><th colspan="8" scope="rowgroup">%s</th></tr>', spatial_html_escape(definition$group)))
+      previous_group <- definition$group
     }
-    haiti_attrs <- spatial_filter_attributes(period_ids, labels$haiti, length(period_ids), labels)
-    panel <- c(panel, sprintf(
-      '<g class="spatial-centre" role="button" tabindex="0" %s aria-label="%s"><title>%s: %d %s</title><circle cx="450" cy="270" r="55"/><text x="450" y="266">%s</text><text class="spatial-node-count" x="450" y="291">%s</text></g>',
-      haiti_attrs, spatial_html_escape(labels$haiti), spatial_html_escape(labels$haiti), length(period_ids),
-      spatial_html_escape(labels$documents), spatial_html_escape(labels$haiti), if (length(period_ids)) length(period_ids) else "—"
-    ))
-    panel <- c(panel, '</svg>')
-    panel <- c(panel, sprintf('<div class="spatial-relations" aria-label="%s"><h3>%s</h3>', spatial_html_escape(labels$relations), spatial_html_escape(labels$relations)))
-    for (code in relation_codes) {
-      ids <- spatial_ids_for(period_records, "relational_framing", code)
-      label <- unname(labels$relation[code])
-      attrs <- spatial_filter_attributes(ids, label, length(ids), labels)
-      panel <- c(panel, sprintf('<button type="button" class="spatial-relation%s" %s><span>%s</span><strong>%s</strong></button>', if (length(ids)) "" else " is-no-data", attrs, spatial_html_escape(label), if (length(ids)) length(ids) else "—"))
+    html <- c(html, sprintf('<tr><th scope="row">%s</th>', spatial_html_escape(definition$label)))
+    for (period_index in seq_along(spatial_constellation_periods)) {
+      period <- spatial_constellation_periods[period_index]
+      period_records <- records[records$period == period & !is.na(records$period), , drop = FALSE]
+      ids <- spatial_ids_for(period_records, definition$dimension, definition$code)
+      n <- length(ids); N <- denominators[period_index]
+      display <- if (N) sprintf("%d/%d", n, N) else "—"
+      info <- if (N) sprintf("%s — %s: %s", definition$label, period, display) else sprintf("%s — %s: %s", definition$label, period, labels$no_data)
+      html <- c(html, sprintf('<td><button type="button" class="spatial-cell%s" style="--cell-level:%.3f" data-spatial-filter data-spatial-documents="%s" data-spatial-info="%s" data-spatial-period-label="%s" data-spatial-code-label="%s" aria-pressed="false"%s><span>%s</span></button></td>',
+        if (!N) " is-no-data" else "", if (N) n / max(denominators, 1L) else 0,
+        spatial_html_escape(paste(ids, collapse = "|")), spatial_html_escape(info),
+        spatial_html_escape(period), spatial_html_escape(definition$label), if (!N) " disabled" else "", display))
     }
-    panel <- c(panel, '</div>', sprintf('<div class="spatial-practices" aria-label="%s"><h3>%s</h3>', spatial_html_escape(labels$practices), spatial_html_escape(labels$practices)))
-    for (code in practice_codes) {
-      ids <- spatial_ids_for(period_records, "spatial_practice", code)
-      label <- unname(labels$practice[code])
-      attrs <- spatial_filter_attributes(ids, label, length(ids), labels)
-      panel <- c(panel, sprintf('<button type="button" class="spatial-practice practice-%s%s" %s><i aria-hidden="true"></i><span>%s</span><strong>%s</strong></button>', code, if (length(ids)) "" else " is-no-data", attrs, spatial_html_escape(label), if (length(ids)) length(ids) else "—"))
-    }
-    panel <- c(panel, '</div></section>')
-    html <- c(html, panel)
+    html <- c(html, '</tr>')
   }
+  html <- c(html, '</tbody></table></div>')
+  evidence_rows <- spatial[spatial$coding_decision == "confirm", , drop = FALSE]
+  html <- c(html, sprintf('<section class="spatial-evidence" data-spatial-evidence hidden tabindex="-1"><div class="spatial-evidence-header"><h3>%s</h3><button type="button" data-spatial-reset>%s</button></div>', spatial_html_escape(labels$evidence), spatial_html_escape(labels$close)))
+  for (id in unique(evidence_rows$document_id)) {
+    excerpts <- unique(unlist(evidence_rows[evidence_rows$document_id == id, grep("^representative_excerpt_", names(evidence_rows)), drop = FALSE], use.names = FALSE))
+    excerpts <- excerpts[!is.na(excerpts) & nzchar(trimws(excerpts))]
+    doc <- docs[docs$document_id == id, , drop = FALSE]
+    title <- if (nrow(doc) && any(nzchar(ifelse(is.na(doc$title), "", doc$title)))) doc$title[which(nzchar(ifelse(is.na(doc$title), "", doc$title)))[1]] else id
+    url <- if (nrow(doc) && any(nzchar(ifelse(is.na(doc$document_url), "", doc$document_url)))) doc$document_url[which(nzchar(ifelse(is.na(doc$document_url), "", doc$document_url)))[1]] else ""
+    source <- if (nzchar(url)) sprintf('<a href="%s" target="_blank" rel="noopener noreferrer">%s ↗</a>', spatial_html_escape(url), spatial_html_escape(labels$source)) else ""
+    html <- c(html, sprintf('<article data-spatial-evidence-document="%s" hidden><h4>%s</h4>%s%s</article>', spatial_html_escape(id), spatial_html_escape(title), paste(sprintf('<blockquote>%s</blockquote>', spatial_html_escape(excerpts)), collapse = ""), source))
+  }
+  html <- c(html, '</section>')
   html <- c(
     html,
     sprintf('<div class="spatial-selection" data-spatial-selection role="status" aria-live="polite">%s</div>', spatial_html_escape(labels$default_info)),

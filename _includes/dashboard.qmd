@@ -49,6 +49,19 @@ if (any(!analytical_docs$concept_coding_state %in% allowed_concept_states)) {
 }
 doc_years <- unique(analytical_docs[!is.na(analytical_docs$year), c("document_id", "year"), drop = FALSE])
 doc_institutions <- unique(analytical_docs[present(analytical_docs$institution), c("document_id", "institution"), drop = FALSE])
+canonical_institution <- function(x) {
+  x <- trimws(as.character(x))
+  aliases <- c(
+    "Department of National Defence" = "National Defence",
+    "Foreign Affairs, Trade and Development Canada" = "Global Affairs Canada",
+    "Department of Foreign Affairs and International Trade" = "Global Affairs Canada",
+    "Canadian International Development Agency" = "Global Affairs Canada",
+    "Royal Canadian Mounted Police (RCMP)" = "Royal Canadian Mounted Police"
+  )
+  replacement <- unname(aliases[x])
+  ifelse(is.na(replacement), x, replacement)
+}
+doc_institutions$institution <- canonical_institution(doc_institutions$institution)
 fam <- split_long(analytical_docs$families, analytical_docs$document_id)
 confirmed_docs <- analytical_docs[analytical_docs$concept_coding_state == "confirmed", , drop = FALSE]
 pending_concept_docs <- unique(analytical_docs$document_id[analytical_docs$concept_coding_state == "pending_review"])
@@ -128,6 +141,36 @@ cat('</div>')
 ::: {#lens-panel-engagements .lens-panel role="tabpanel" aria-labelledby="lens-tab-engagements" tabindex="0"}
 
 ## `r L$engagement_heading`
+
+```{r}
+engagement_stream <- build_engagement_stream(
+  engagements, engagement_documents, engagement_instruments, docs, site_lang
+)
+if (!is.null(engagement_stream)) {
+  ribbon_data <- rbind(
+    transform(engagement_stream, x = year - 0.5),
+    transform(engagement_stream, x = year + 0.5)
+  )
+  ribbon_data <- ribbon_data[order(ribbon_data$categories, ribbon_data$x), ]
+  stream_plot <- ggplot2::ggplot(
+    ribbon_data,
+    ggplot2::aes(x = x, ymin = ymin, ymax = ymax, fill = categories,
+      group = categories, text = tooltip)
+  ) +
+    ggplot2::geom_ribbon(colour = "white", linewidth = 0.25) +
+    ggplot2::scale_fill_manual(
+      values = engagement_category_colours,
+      breaks = names(engagement_categories),
+      labels = vapply(engagement_categories, `[[`, character(1), site_lang),
+      name = L$instrument
+    ) +
+    ggplot2::scale_x_continuous(limits = c(1990.5, 2026.5), breaks = unique(c(1991, seq(1995, 2025, 5), 2026))) +
+    ggplot2::labs(x = NULL, y = simple_timeline_labels[[site_lang]]$stream_y,
+      title = simple_timeline_labels[[site_lang]]$stream_title) +
+    plot_theme + ggplot2::theme(axis.text.y = ggplot2::element_blank(), panel.grid.major.y = ggplot2::element_blank())
+  interactive_plot(stream_plot)
+}
+```
 
 ```{r results='asis'}
 cat(render_operational_board(
@@ -211,6 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const closeAll = () => {
       triggers.forEach(trigger => trigger.setAttribute('aria-expanded', 'false'));
+      board.querySelectorAll('[data-engagement-id]').forEach(item => item.classList.remove('is-engagement-selected'));
       briefs.forEach(brief => {
         brief.hidden = true;
         restoreBrief(brief);
@@ -222,7 +266,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const wasOpen = trigger.getAttribute('aria-expanded') === 'true';
       closeAll();
       if (!wasOpen && target) {
-        trigger.setAttribute('aria-expanded', 'true');
+        const engagementId = trigger.closest('[data-engagement-id]')?.dataset.engagementId;
+        triggers.filter(candidate => candidate.closest('[data-engagement-id]')?.dataset.engagementId === engagementId)
+          .forEach(candidate => candidate.setAttribute('aria-expanded', 'true'));
+        board.querySelectorAll(`[data-engagement-id="${CSS.escape(engagementId)}"]`)
+          .forEach(item => item.classList.add('is-engagement-selected'));
         document.body.appendChild(target);
         target.classList.add('is-viewport-overlay');
         target.dataset.positioning = 'true';
@@ -337,7 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
 ::: {#lens-panel-spatial .lens-panel role="tabpanel" aria-labelledby="lens-tab-spatial" tabindex="0" hidden="hidden"}
 
 ```{r results='asis'}
-cat(render_spatial_constellation(spatial_review, doc_years, site_lang))
+cat(render_spatial_constellation(spatial_review, doc_years, docs, site_lang))
 ```
 
 :::
@@ -359,22 +407,45 @@ if (nrow(concept_years)) {
   concept_counts <- merge(concept_counts, period_denominators, by = "period", all.x = TRUE)
   concept_counts$count[is.na(concept_counts$count)] <- 0L
   concept_counts$period_total[is.na(concept_counts$period_total)] <- 0L
-  concept_counts$percentage <- ifelse(concept_counts$period_total > 0, 100 * concept_counts$count / concept_counts$period_total, NA_real_)
+  concept_counts$proportion <- ifelse(concept_counts$period_total > 0, concept_counts$count / concept_counts$period_total, NA_real_)
   concept_counts$period <- factor(concept_counts$period, levels = period_levels)
   concept_counts$concept <- label_text(concept_counts$value)
   concept_counts$tooltip <- ifelse(
     concept_counts$period_total > 0,
-    paste0(L$concept, ": ", concept_counts$concept, "<br>", period_label, ": ", concept_counts$period, "<br>", L$documents, ": ", concept_counts$count, " / ", concept_counts$period_total, "<br>", sprintf("%.1f%%", concept_counts$percentage)),
+    paste0(L$concept, ": ", concept_counts$concept, "<br>", period_label, ": ", concept_counts$period, "<br>", L$documents, ": ", concept_counts$count, " / ", concept_counts$period_total, "<br>", sprintf("%.1f%%", 100 * concept_counts$proportion)),
     paste0(L$concept, ": ", concept_counts$concept, "<br>", period_label, ": ", concept_counts$period, "<br>", L$no_dated_period)
   )
-  p <- ggplot2::ggplot(concept_counts, ggplot2::aes(period, concept, fill = percentage,
-    text = tooltip)) +
+  concept_counts$cell_label <- ifelse(concept_counts$period_total > 0, paste0(concept_counts$count, "/", concept_counts$period_total), "—")
+  p <- ggplot2::ggplot(concept_counts, ggplot2::aes(period, concept, fill = proportion,
+    text = tooltip, customdata = value)) +
     ggplot2::geom_tile(colour = "#f8f6f1", linewidth = 0.7) +
-    ggplot2::scale_fill_gradient(low = "#eef3f5", high = navy) +
-    ggplot2::labs(x = NULL, y = L$analytical_concept, fill = "%") +
+    ggplot2::geom_text(ggplot2::aes(label = cell_label), colour = navy, size = 3, na.rm = FALSE) +
+    ggplot2::scale_fill_viridis_c(begin = 0.20, end = 0.75, limits = c(0, 1), na.value = "#f2f2f2") +
+    ggplot2::labs(x = NULL, y = L$analytical_concept, fill = L$proportion) +
     plot_theme
-  interactive_plot(p)
+  matrix_widget <- plotly::ggplotly(p, tooltip = "text", source = "concept-matrix", dynamicTicks = FALSE)
+  plotly::config(matrix_widget, displayModeBar = FALSE, responsive = TRUE)
 } else empty_note(L$no_concepts)
+```
+
+```{r}
+if (exists("concept_counts") && nrow(concept_counts)) {
+  trajectory <- concept_counts[concept_counts$period_total > 0, ]
+  trajectory_plot <- ggplot2::ggplot(trajectory, ggplot2::aes(
+    period, proportion, colour = concept, group = concept, customdata = value,
+    text = tooltip
+  )) +
+    ggplot2::geom_point(size = 2.8) +
+    ggplot2::facet_wrap(~ concept, ncol = 1) +
+    ggplot2::scale_y_continuous(limits = c(0, 1), labels = scales::label_percent()) +
+    ggplot2::scale_colour_manual(values = setNames(rep(red, length(unique(trajectory$concept))), unique(trajectory$concept)), guide = "none") +
+    ggplot2::labs(x = NULL, y = L$proportion, title = L$concept_trajectory) +
+    plot_theme
+  trajectory_widget <- plotly::ggplotly(trajectory_plot, tooltip = "text", source = "concept-trajectory", dynamicTicks = FALSE)
+  trajectory_widget$x$layout$uirevision <- "concept-selection"
+  trajectory_widget <- plotly::config(trajectory_widget, displayModeBar = FALSE, responsive = TRUE)
+  htmltools::div(class = "concept-trajectory", `data-concept-trajectory` = "", hidden = NA, trajectory_widget)
+}
 ```
 
 ```{r results='asis'}
@@ -435,7 +506,12 @@ for (period_index in seq_along(matrix_keys)) {
   cat(paste(sprintf('<th>%s</th>', instrument_labels[[site_lang]][instruments]), collapse = ""), '</tr></thead><tbody>')
   for (institution in institutions) {
     institution_label <- localized_institution(institution, site_lang)
-    cat(sprintf('<tr><th>%s</th>', institution_label))
+    bar_values <- vapply(instruments, function(instrument) {
+      matched <- counts$count[counts$institution == institution & counts$instrument == instrument]
+      if (length(matched)) matched[1] else 0L
+    }, integer(1))
+    cat(sprintf('<tr data-institution-row data-institution="%s" data-instrument-counts="%s"><th><button type="button" class="institution-select" aria-pressed="false">%s</button></th>',
+      operational_escape(institution_label), paste(paste(instruments, bar_values, sep = "="), collapse = "|"), operational_escape(institution_label)))
     for (instrument in instruments) {
       matched <- counts$count[counts$institution == institution & counts$instrument == instrument]
       count <- if (length(matched)) matched[1] else 0L
@@ -446,7 +522,26 @@ for (period_index in seq_along(matrix_keys)) {
   }
   cat('</tbody></table></div></div>')
 }
-cat('</div>')
+cat(sprintf('<p class="chart-note">%s</p></div>', L$issued_documents_note))
+```
+
+```{r}
+if (nrow(instrument_docs)) {
+  initial_institution <- sort(unique(instrument_docs$institution))[1]
+  initial_counts <- aggregate(document_id ~ instrument,
+    unique(instrument_docs[instrument_docs$institution == initial_institution, c("document_id", "instrument")]), length)
+  names(initial_counts)[2] <- "count"
+  initial_counts <- merge(data.frame(instrument = names(instrument_labels[[site_lang]])), initial_counts, by = "instrument", all.x = TRUE)
+  initial_counts$count[is.na(initial_counts$count)] <- 0L
+  initial_counts$label <- unname(instrument_labels[[site_lang]][initial_counts$instrument])
+  detail_plot <- ggplot2::ggplot(initial_counts, ggplot2::aes(reorder(label, count), count,
+    text = paste0(L$instrument, ": ", label, "<br>", L$issued_documents, ": ", count))) +
+    ggplot2::geom_col(fill = navy, width = 0.68) + ggplot2::coord_flip() +
+    ggplot2::labs(x = L$instrument, y = L$issued_documents,
+      title = localized_institution(initial_institution, site_lang)) + plot_theme
+  htmltools::div(class = "institution-detail", `data-institution-detail` = "", hidden = NA,
+    htmltools::p(class = "chart-note", L$select_institution), interactive_plot(detail_plot))
+}
 ```
 
 :::
@@ -467,10 +562,13 @@ cat(sprintf('<p class="chart-note">%s</p>', L$corpus_composition_note))
 
 ```{r}
 if (nrow(doc_years)) {
-  year_counts <- aggregate(document_id ~ year, doc_years, length)
-  names(year_counts)[2] <- "count"
+  year_counts <- dplyr::count(dplyr::distinct(doc_years, document_id, year), year, name = "count")
+  year_counts <- dplyr::left_join(data.frame(year = 1991:2026), year_counts, by = "year")
+  year_counts$count[is.na(year_counts$count)] <- 0L
   p <- ggplot2::ggplot(year_counts, ggplot2::aes(year, count, text = paste0(L$year, ": ", year, "<br>", L$documents, ": ", count))) +
-    ggplot2::geom_col(fill = navy, width = 0.72) + ggplot2::labs(x = NULL, y = L$documents) + plot_theme
+    ggplot2::geom_col(fill = navy, width = 0.86) +
+    ggplot2::scale_x_continuous(limits = c(1990.5, 2026.5), breaks = unique(c(1991, seq(1995, 2025, 5), 2026))) +
+    ggplot2::labs(x = L$year, y = L$documents) + plot_theme
   interactive_plot(p)
 } else empty_note(L$no_dated)
 ```
@@ -479,9 +577,9 @@ if (nrow(doc_years)) {
 
 ```{r}
 if (nrow(doc_institutions)) {
-  institution_counts <- aggregate(document_id ~ institution, doc_institutions, length)
-  names(institution_counts)[2] <- "count"
-  p <- ggplot2::ggplot(institution_counts, ggplot2::aes(reorder(institution, count), count, text = paste0(L$institution, ": ", institution, "<br>", L$documents, ": ", count))) +
+  institution_counts <- dplyr::count(dplyr::distinct(doc_institutions, document_id, institution), institution, name = "count")
+  institution_counts$display <- localized_institution(institution_counts$institution, site_lang)
+  p <- ggplot2::ggplot(institution_counts, ggplot2::aes(reorder(display, count), count, text = paste0(L$institution, ": ", display, "<br>", L$documents, ": ", count))) +
     ggplot2::geom_col(fill = navy, width = 0.68) + ggplot2::coord_flip() + ggplot2::labs(x = NULL, y = L$documents) + plot_theme
   interactive_plot(p)
 } else empty_note(L$no_institutions)
@@ -490,12 +588,16 @@ if (nrow(doc_institutions)) {
 ## `r L$language_availability`
 
 ```{r}
-language_docs <- unique(analytical_docs[present(analytical_docs$language), c("document_id", "language"), drop = FALSE])
+language_docs <- unique(analytical_docs[present(analytical_docs$version_id) & present(analytical_docs$language), c("version_id", "language"), drop = FALSE])
 language_docs$language_label <- ifelse(tolower(language_docs$language) == "en", L$english, ifelse(tolower(language_docs$language) == "fr", L$french, label_text(language_docs$language)))
-language_counts <- aggregate(document_id ~ language_label, language_docs, length)
+language_counts <- aggregate(version_id ~ language_label, language_docs, length)
 names(language_counts) <- c("language", "count")
 p <- ggplot2::ggplot(language_counts, ggplot2::aes(language, count, fill = language, text = paste0(language, ": ", count))) +
-  ggplot2::geom_col(width = 0.58, show.legend = FALSE) + ggplot2::scale_fill_manual(values = setNames(c(navy, red), c(L$english, L$french)), na.value = blue) + ggplot2::labs(x = NULL, y = L$documents) + plot_theme
+  ggplot2::geom_col(width = 0.58, show.legend = FALSE) +
+  ggplot2::geom_text(ggplot2::aes(label = count), vjust = -0.35, colour = navy) +
+  ggplot2::scale_fill_manual(values = setNames(c(navy, red), c(L$english, L$french)), na.value = blue) +
+  ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0, 0.12))) +
+  ggplot2::labs(x = NULL, y = L$versions) + plot_theme
 interactive_plot(p)
 ```
 :::
@@ -559,6 +661,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const constellation = target?.closest('[data-spatial-constellation]') ?? document.querySelector('[data-spatial-constellation]');
     const status = constellation?.querySelector('[data-spatial-selection]');
     if (status && target) status.textContent = target.dataset.spatialInfo;
+    const evidence = constellation?.querySelector('[data-spatial-evidence]');
+    if (evidence) {
+      const ids = rawIds === null ? [] : rawIds.split('|').filter(Boolean);
+      evidence.hidden = !target;
+      evidence.querySelectorAll('[data-spatial-evidence-document]').forEach(article => {
+        article.hidden = !ids.includes(article.dataset.spatialEvidenceDocument);
+      });
+      if (target) evidence.focus({ preventScroll: true });
+    }
     constellation?.querySelectorAll('[data-spatial-filter]').forEach(candidate => {
       candidate.classList.toggle('is-selected', candidate === target);
       candidate.setAttribute('aria-pressed', String(candidate === target));
@@ -566,39 +677,60 @@ document.addEventListener('DOMContentLoaded', () => {
     window.dispatchEvent(new CustomEvent('corpus-spatial-filter'));
   };
   document.querySelectorAll('[data-spatial-constellation]').forEach(constellation => {
-    const selector = constellation.querySelector('[data-spatial-period]');
-    const panels = [...constellation.querySelectorAll('[data-spatial-period-panel]')];
-    const reset = constellation.querySelector('[data-spatial-reset]');
+    const resets = [...constellation.querySelectorAll('[data-spatial-reset]')];
     const defaultStatus = constellation.querySelector('[data-spatial-selection]')?.textContent;
-    selector?.addEventListener('change', () => {
-      panels.forEach(panel => { panel.hidden = panel.id !== selector.value; });
-      setSpatialFilter(null);
-      const status = constellation.querySelector('[data-spatial-selection]');
-      if (status) status.textContent = defaultStatus;
-    });
     constellation.querySelectorAll('[data-spatial-filter]').forEach(target => {
       target.setAttribute('aria-pressed', 'false');
       target.addEventListener('click', () => setSpatialFilter(target));
-      if (target.tagName.toLowerCase() === 'g') {
-        target.addEventListener('keydown', event => {
-          if (event.key !== 'Enter' && event.key !== ' ') return;
-          event.preventDefault();
-          setSpatialFilter(target);
-        });
-      }
     });
-    reset?.addEventListener('click', () => {
+    resets.forEach(reset => reset.addEventListener('click', () => {
       setSpatialFilter(null);
+      const evidence = constellation.querySelector('[data-spatial-evidence]');
+      if (evidence) evidence.hidden = true;
       const status = constellation.querySelector('[data-spatial-selection]');
       if (status) status.textContent = defaultStatus;
-    });
+    }));
+  });
+
+  const discoursePanel = document.querySelector('#lens-panel-discourses');
+  const discoursePlots = [...(discoursePanel?.querySelectorAll('.js-plotly-plot') || [])];
+  const conceptMatrix = discoursePlots[0];
+  const trajectoryContainer = discoursePanel?.querySelector('[data-concept-trajectory]');
+  const trajectoryPlot = trajectoryContainer?.querySelector('.js-plotly-plot');
+  conceptMatrix?.on('plotly_click', event => {
+    const concept = event.points?.[0]?.customdata;
+    if (!concept || !trajectoryPlot) return;
+    const visibility = trajectoryPlot.data.map(trace => (trace.customdata || []).includes(concept));
+    Plotly.restyle(trajectoryPlot, { visible: visibility });
+    trajectoryContainer.hidden = false;
+    trajectoryContainer.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   });
 
   document.querySelectorAll('[data-instrument-matrix]').forEach(matrix => {
     const selector = matrix.querySelector('[data-matrix-period]');
     const panels = [...matrix.querySelectorAll('.instrument-matrix-panel')];
+    const detail = matrix.closest('.lens-panel')?.querySelector('[data-institution-detail]');
+    const plot = detail?.querySelector('.js-plotly-plot');
+    const selectInstitution = row => {
+      if (!row || !plot) return;
+      const entries = Object.fromEntries(row.dataset.instrumentCounts.split('|').map(pair => pair.split('=')));
+      const headers = [...row.closest('table').querySelectorAll('thead th')].slice(1).map(th => th.textContent.trim());
+      const keys = Object.keys(entries);
+      const values = keys.map(key => Number(entries[key]));
+      Plotly.react(plot, [{ type: 'bar', orientation: 'h', x: values, y: headers,
+        marker: { color: '#17324d' }, hovertemplate: '%{y}: %{x}<extra></extra>' }],
+        { ...plot.layout, title: { text: row.dataset.institution }, xaxis: { title: plot.layout.xaxis?.title?.text || '' } },
+        { responsive: true, displayModeBar: false });
+      detail.hidden = false;
+      matrix.querySelectorAll('.institution-select').forEach(button => {
+        button.setAttribute('aria-pressed', String(button.closest('tr') === row));
+      });
+    };
+    matrix.querySelectorAll('.institution-select').forEach(button => button.addEventListener('click', () => selectInstitution(button.closest('tr'))));
     selector?.addEventListener('change', () => {
       panels.forEach(panel => { panel.hidden = panel.id !== selector.value; });
+      if (detail) detail.hidden = true;
+      matrix.querySelectorAll('.institution-select').forEach(button => button.setAttribute('aria-pressed', 'false'));
     });
   });
   const toggle = document.querySelector('[data-about-corpus-toggle]');

@@ -4,7 +4,7 @@
 
 site_labels <- list(
   en = list(
-    corpus_summary = "Corpus summary", documents = "Documents", date_range = "Date range",
+    corpus_summary = "Corpus summary", documents = "Documents", versions = "Versions", date_range = "Date range",
     institutions = "Institutions", document_families = "Document families", year = "Year",
     family = "Family", concept = "Concept", document_family = "Document family",
     analytical_concept = "Analytical concept", documents_over_time = "Documents over time",
@@ -21,10 +21,13 @@ site_labels <- list(
     concept_percentage_note = "Percentages describe the retained corpus and should not be interpreted as external measures of policy prevalence. A concept not matched in a document is not proof that the concept is absent.",
     no_dated_period = "No dated documents in the retained corpus",
     instrument = "Instrument", selected_period = "Selected period", full_period = "All periods (1991–2026)",
+    proportion = "Proportion", concept_trajectory = "Selected concept trajectory",
+    issued_documents = "Documents issued", select_institution = "Select an institution to show its issued documents by instrument",
+    issued_documents_note = "Counts refer to documents issued by each institution. Publishing about an operation does not mean that the institution executed it.",
     corpus_composition_note = "Institutions identify the public bodies that issued the documents. Document families group records by the principal official domains or instruments through which Canadian security and intervention in Haiti are documented. Families are not mutually exclusive.",
     family_by_concept = "Family by concept", english = "English", french = "French",
     available_english = "Documents available in English", available_french = "Documents available in French",
-    language_note = "A document available in both official languages is represented once in each language.",
+    language_note = "Counts refer to distinct document versions; a document available in both official languages contributes one version to each language.",
     explore = "Document explorer",
     search_intro = "Search across the table or narrow the corpus by year, institution, document family, or analytical concept. Document titles link to the available official texts.",
     search_documents = "Search documents", search_placeholder = "Search title, institution, family or concept",
@@ -46,7 +49,7 @@ site_labels <- list(
     empty_corpus = "The corpus is currently empty. Documents will appear here after collection and review."
   ),
   fr = list(
-    corpus_summary = "Résumé du corpus", documents = "Documents", date_range = "Période",
+    corpus_summary = "Résumé du corpus", documents = "Documents", versions = "Versions", date_range = "Période",
     institutions = "Institutions", document_families = "Familles documentaires", year = "Année",
     family = "Famille", concept = "Concept", document_family = "Famille documentaire",
     analytical_concept = "Concept analytique", documents_over_time = "Documents au fil du temps",
@@ -63,10 +66,13 @@ site_labels <- list(
     concept_percentage_note = "Les pourcentages décrivent le corpus retenu et ne constituent pas une mesure externe de la prévalence des politiques. L’absence de correspondance avec un concept dans un document ne prouve pas que ce concept en est absent.",
     no_dated_period = "Aucun document daté dans le corpus retenu",
     instrument = "Instrument", selected_period = "Période sélectionnée", full_period = "Toutes les périodes (1991–2026)",
+    proportion = "Proportion", concept_trajectory = "Trajectoire du concept sélectionné",
+    issued_documents = "Documents émis", select_institution = "Sélectionnez une institution pour afficher ses documents émis par instrument",
+    issued_documents_note = "Les effectifs portent sur les documents émis par chaque institution. Publier au sujet d’une opération ne signifie pas que l’institution l’a exécutée.",
     corpus_composition_note = "Les institutions désignent les organismes publics qui ont produit les documents. Les familles documentaires regroupent les publications selon les principaux domaines ou instruments officiels par lesquels la sécurité et l’intervention canadiennes en Haïti sont documentées. Ces familles ne sont pas mutuellement exclusives.",
     family_by_concept = "Famille documentaire par concept", english = "Anglais", french = "Français",
     available_english = "Documents disponibles en anglais", available_french = "Documents disponibles en français",
-    language_note = "Un document disponible dans les deux langues officielles est représenté une fois dans chaque langue.",
+    language_note = "Les effectifs portent sur les versions documentaires distinctes; un document offert dans les deux langues officielles compte une version dans chaque langue.",
     explore = "Exploration documentaire",
     search_intro = "Effectuez une recherche dans le tableau ou filtrez le corpus par année, institution, famille documentaire ou concept analytique. Les titres donnent accès aux textes officiels disponibles.",
     search_documents = "Rechercher des documents", search_placeholder = "Rechercher un titre, une institution, une famille ou un concept",

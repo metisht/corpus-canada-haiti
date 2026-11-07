@@ -64,6 +64,8 @@ simple_timeline_labels <- list(
     eyebrow = "Operational briefing board",
     title = "Canada’s engagement architecture in Haiti",
     subtitle = "Layers of documented Canadian engagement show their overlap and accumulation, 1991–2026.",
+    stream_title = "Distinct engagements beginning or announced each year",
+    stream_y = "Distinct engagements",
     axis = "Documented Canadian engagements from 1991 to 2026",
     legend_dot = "Dot: dated official engagement record",
     legend_segment = "Line: documented duration",
@@ -87,6 +89,8 @@ simple_timeline_labels <- list(
     eyebrow = "Tableau de situation opérationnelle",
     title = "Architecture de l’engagement canadien en Haïti",
     subtitle = "Les couches de l’engagement canadien documenté montrent leur chevauchement et leur sédimentation, 1991–2026.",
+    stream_title = "Engagements distincts amorcés ou annoncés chaque année",
+    stream_y = "Engagements distincts",
     axis = "Engagements canadiens documentés de 1991 à 2026",
     legend_dot = "Point : document officiel daté relatif à l’engagement",
     legend_segment = "Trait : durée documentée",
@@ -236,6 +240,11 @@ engagement_categories <- list(
   finance = c(en = "Financial and humanitarian assistance", fr = "Assistance financière et humanitaire")
 )
 
+engagement_category_colours <- c(
+  military = "#17324d", police = "#2f7f80", development = "#55766a",
+  diplomacy = "#527a95", sanctions = "#a44747", finance = "#9a7638"
+)
+
 engagement_instrument_labels <- list(
   military_operation = c(en = "Military operation", fr = "Opération militaire"),
   police_training = c(en = "Police training", fr = "Formation policière"),
@@ -321,6 +330,44 @@ build_timeline_engagements <- function(engagements, engagement_documents,
     paste(unique(links[nzchar(links)]), collapse = "\n")
   }, character(1))
   records[order(records$start, records$engagement_id), , drop = FALSE]
+}
+
+build_engagement_stream <- function(engagements, engagement_documents,
+                                    engagement_instruments, docs, lang) {
+  records <- build_timeline_engagements(
+    engagements, engagement_documents, engagement_instruments, docs, lang
+  )
+  if (!nrow(records)) return(NULL)
+  long <- dplyr::distinct(
+    tidyr::separate_rows(records, categories, sep = "\\|"),
+    engagement_id, start, categories
+  )
+  annual <- dplyr::count(
+    dplyr::mutate(long, year = as.integer(format(start, "%Y"))),
+    year, categories, name = "count"
+  )
+  complete <- tidyr::expand_grid(
+    year = 1991:2026,
+    categories = factor(names(engagement_categories), levels = names(engagement_categories))
+  )
+  annual <- dplyr::left_join(complete, annual, by = c("year", "categories"))
+  annual$count[is.na(annual$count)] <- 0L
+  annual <- dplyr::arrange(annual, year, categories)
+  annual <- dplyr::group_by(annual, year)
+  annual <- dplyr::mutate(
+    annual,
+    ymin = cumsum(dplyr::lag(count, default = 0)) - sum(count) / 2,
+    ymax = ymin + count
+  )
+  annual <- dplyr::ungroup(annual)
+  annual$instrument <- vapply(as.character(annual$categories), function(category) {
+    engagement_categories[[category]][[lang]]
+  }, character(1))
+  annual$tooltip <- paste0(
+    simple_timeline_labels[[lang]]$stream_title, "<br>",
+    annual$year, " · ", annual$instrument, ": ", annual$count
+  )
+  annual
 }
 
 assign_engagement_offsets <- function(records) {
